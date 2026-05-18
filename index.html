@@ -6,172 +6,192 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="100_Run">
-<meta name="theme-color" content="#d4741f">
+<meta name="theme-color" content="#ff9500">
 <link rel="manifest" href="manifest.json">
 <title>100_Run 健身追蹤器</title>
 <style>
 :root{
-  --bg:#faf8f5;
-  --bg2:#f0ebe3;
-  --bg3:#e8e0d5;
+  --bg:#f2f2f7;
   --card:#ffffff;
-  --border:#e8e0d5;
-  --border2:#d5c9bb;
-  --text:#2c2416;
-  --text2:#5c4d3a;
-  --text3:#a08c78;
-  --accent:#d4741f;
-  --accent-lt:#fef3e8;
-  --accent-dk:#9a4a10;
-  --green:#2d6a2d;
-  --green-lt:#e8f4e8;
-  --blue:#1e4ba0;
-  --blue-lt:#dbeafe;
-  --purple:#5b3fa0;
-  --purple-lt:#ede9fc;
-  --red:#b91c1c;
-  --red-lt:#fde8e8;
-  --radius:12px;
-  --radius-sm:8px;
+  --border:rgba(0,0,0,0.08);
+  --text:#1c1c1e;
+  --text2:#3a3a3c;
+  --text3:#8e8e93;
+  --sep:#e5e5ea;
+  --accent:#ff9500;
+  --accent-lt:#fff3e0;
+  --green:#30d158;
+  --blue:#0a84ff;
+  --purple:#bf5af2;
+  --red:#ff3b30;
+  --red-lt:#fff0f0;
+  --radius:16px;
+  --radius-sm:10px;
   --safe-top:env(safe-area-inset-top,0px);
   --safe-bottom:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sans-serif;overflow:hidden}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;overflow:hidden}
 
-/* Layout */
 #app{display:flex;flex-direction:column;height:100vh;height:100dvh}
-#header{padding:calc(var(--safe-top)+12px) 16px 12px;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
-#header-title{font-size:17px;font-weight:700;color:var(--text)}
-#header-title span{color:var(--accent)}
-#content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--safe-bottom)+68px)}
-#nav{position:fixed;bottom:0;left:0;right:0;height:calc(56px + var(--safe-bottom));padding-bottom:var(--safe-bottom);background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--text3);font-size:10px;font-weight:500;border:none;background:none;padding:0;transition:color .15s}
+#header{padding:calc(var(--safe-top)+12px) 20px 10px;background:var(--card);border-bottom:0.5px solid var(--sep);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.hdr-title{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-0.3px}
+.hdr-title span{color:var(--accent)}
+.hdr-badge{font-size:11px;color:var(--text3);background:var(--bg);padding:4px 10px;border-radius:20px}
+#content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--safe-bottom)+64px)}
+#nav{position:fixed;bottom:0;left:0;right:0;height:calc(56px + var(--safe-bottom));padding-bottom:var(--safe-bottom);background:rgba(255,255,255,0.92);border-top:0.5px solid var(--sep);display:flex;z-index:100}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:var(--text3);font-size:10px;font-weight:500;border:none;background:none;padding:0;transition:color .15s}
 .nav-btn.active{color:var(--accent)}
-.nav-icon{font-size:20px;line-height:1}
+.nav-btn i{font-size:22px}
 
-/* Sections */
-.sec{display:none;padding:14px}.sec.active{display:block}
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px}
-.card-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:12px}
+.sec{display:none;padding:14px 14px 0}.sec.active{display:block}
+.card{background:var(--card);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px}
+.card-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.card-header .card-title{margin-bottom:0}
+.card-action{font-size:13px;color:var(--accent);font-weight:500;cursor:pointer}
 
-/* Metrics */
-.mg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
-.mg4{grid-template-columns:repeat(4,1fr)}
-.mc{background:var(--bg2);border-radius:var(--radius-sm);padding:10px 12px}
+.mg4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.mg2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.mc{background:var(--bg);border-radius:var(--radius-sm);padding:10px 10px}
 .mc-lbl{font-size:10px;color:var(--text3);margin-bottom:3px;font-weight:500}
-.mc-val{font-size:20px;font-weight:700;color:var(--text);line-height:1}
-.mc-unit{font-size:10px;color:var(--text3);margin-top:2px}
+.mc-val{font-size:18px;font-weight:700;color:var(--text);line-height:1;letter-spacing:-0.5px}
+.mc-unit{font-size:10px;color:var(--text3);margin-top:1px}
 
-/* Forms */
 .fg{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
-.fg label{font-size:12px;color:var(--text2);font-weight:500}
-.fg input,.fg select{background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:10px 12px;font-size:14px;color:var(--text);width:100%;outline:none;-webkit-appearance:none;appearance:none}
-.fg input:focus,.fg select:focus{border-color:var(--accent);background:var(--accent-lt)}
-.fg input::placeholder{color:var(--text3)}
+.fg label{font-size:12px;color:var(--text3);font-weight:500}
+.fg input,.fg select{background:var(--bg);border:none;border-radius:var(--radius-sm);padding:11px 12px;font-size:14px;color:var(--text);width:100%;outline:none;-webkit-appearance:none}
+.fg input:focus{background:#fff3e0}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .form-full{grid-column:1/-1}
 
-/* Buttons */
-.btn{display:inline-flex;align-items:center;gap:5px;padding:10px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:opacity .15s,transform .1s}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 18px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:opacity .15s,transform .1s;width:100%}
 .btn:active{transform:scale(0.97)}
 .btn-primary{background:var(--accent);color:#fff}
-.btn-secondary{background:var(--bg2);color:var(--text2);border:1px solid var(--border2)}
-.btn-edit{background:#fef3e8;color:var(--accent-dk);border:1px solid #fbd9b0}
-.btn-del{background:var(--red-lt);color:var(--red);border:1px solid #fecaca}
-.btn-green{background:var(--green-lt);color:var(--green);border:1px solid #bbf7d0}
-.btn-sm{padding:6px 11px;font-size:12px}
-.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btn-secondary{background:var(--bg);color:var(--text2)}
+.btn-danger{background:var(--red-lt);color:var(--red)}
+.btn-sm{padding:8px 14px;font-size:12px;width:auto}
+.btn-row{display:flex;gap:8px;margin-top:12px}
 
-/* Auto-calc */
-#ac-box{background:var(--accent-lt);border:1px solid #fbd9b0;border-radius:var(--radius-sm);padding:12px;margin:10px 0;display:none}
-.ac-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.ac-lbl{font-size:10px;color:var(--text3);margin-bottom:3px;font-weight:500}
-.ac-val{font-size:15px;font-weight:700;color:var(--accent-dk)}
+#ac-box{background:var(--accent-lt);border-radius:var(--radius-sm);padding:12px;margin:10px 0;display:none}
+.ac-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.ac-lbl{font-size:10px;color:var(--text3);margin-bottom:2px;font-weight:500}
+.ac-val{font-size:15px;font-weight:700;color:var(--accent)}
 
-/* Status */
 .st{font-size:12px;padding:8px 12px;border-radius:var(--radius-sm);margin-top:10px;display:none}
-.st-ok{display:block;background:var(--green-lt);color:var(--green);border:1px solid #bbf7d0}
-.st-err{display:block;background:var(--red-lt);color:var(--red);border:1px solid #fecaca}
-.st-pend{display:block;background:var(--accent-lt);color:var(--accent-dk);border:1px solid #fbd9b0}
+.st-ok{display:block;background:#e8faf0;color:#1a7f37}
+.st-err{display:block;background:var(--red-lt);color:var(--red)}
+.st-pend{display:block;background:var(--accent-lt);color:#9a4a10}
 
-/* Log list */
-.log-list{max-height:400px;overflow-y:auto}
-.log-item{padding:12px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.log-list{max-height:420px;overflow-y:auto}
+.log-item{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:0.5px solid var(--sep)}
 .log-item:last-child{border-bottom:none}
+.log-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.log-body{flex:1;min-width:0}
 .log-date{font-size:13px;font-weight:700;color:var(--text)}
-.log-meta{font-size:12px;color:var(--text3);margin-top:3px;line-height:1.7}
-.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px}
-.b-run{background:var(--blue-lt);color:var(--blue)}
-.b-cycle{background:var(--green-lt);color:var(--green)}
-.b-swim{background:var(--purple-lt);color:var(--purple)}
-.b-other{background:var(--accent-lt);color:var(--accent-dk)}
-.log-actions{display:flex;gap:6px;flex-shrink:0;align-items:flex-start;margin-top:2px}
-.icon-btn{width:30px;height:30px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--bg2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
-.icon-btn-del{border-color:#fecaca;background:var(--red-lt)}
+.log-meta{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.7}
+.log-actions{display:flex;gap:6px;flex-shrink:0}
+.icon-btn{width:32px;height:32px;border-radius:8px;border:none;background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--text3)}
+.icon-btn-del{background:var(--red-lt);color:var(--red)}
 
-/* Edit modal */
-#edit-overlay{display:none;position:fixed;inset:0;background:rgba(44,36,22,0.4);z-index:200;align-items:flex-end;justify-content:center}
-#edit-overlay.show{display:flex}
-#edit-modal{background:var(--card);border-radius:16px 16px 0 0;width:100%;max-height:90vh;overflow-y:auto;padding:20px 16px calc(var(--safe-bottom)+20px)}
-.modal-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
-.modal-close{width:28px;height:28px;border-radius:50%;background:var(--bg2);border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text2)}
-
-/* PR */
-.pr-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.pr-c{background:var(--bg2);border-radius:var(--radius-sm);padding:10px 12px}
-.pr-lbl{font-size:10px;color:var(--text3);margin-bottom:3px;font-weight:500}
+.pr-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pr-c{background:var(--bg);border-radius:var(--radius-sm);padding:10px 12px}
+.pr-lbl{font-size:10px;color:var(--text3);margin-bottom:2px;font-weight:500}
 .pr-val{font-size:17px;font-weight:700;color:var(--text)}
 .pr-date{font-size:10px;color:var(--text3);margin-top:2px}
 
 /* Streak */
-.streak-hero{text-align:center;padding:16px 0 14px}
-.streak-num{font-size:68px;font-weight:800;color:var(--accent);line-height:1;letter-spacing:-2px}
-.streak-sub{font-size:13px;color:var(--text3);margin-top:6px}
-.s-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:var(--blue-lt);color:var(--blue)}
-.s-badge.best{background:var(--green-lt);color:var(--green)}
-.streak-run{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}
-.streak-run:last-child{border-bottom:none}
+.streak-hero{text-align:center;padding:16px 0 12px}
+.streak-num{font-size:72px;font-weight:800;color:var(--accent);line-height:1;letter-spacing:-3px}
+.streak-sub{font-size:13px;color:var(--text3);margin-top:4px}
+.s-run{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:0.5px solid var(--sep);font-size:13px}
+.s-run:last-child{border-bottom:none}
+.s-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:#e8f5e9;color:#1b5e20}
+.s-badge.best{background:#fff3e0;color:#9a4a10}
 
 /* Heatmap */
 .hm-wrap{overflow-x:auto;padding-bottom:4px}
 .hm-inner{display:flex;gap:3px;width:max-content}
 .hm-col{display:flex;flex-direction:column;gap:3px}
-.hm-cell{width:13px;height:13px;border-radius:3px;cursor:default}
+.hm-cell{width:13px;height:13px;border-radius:3px}
 .hm-mrow{display:flex;gap:3px;width:max-content;margin-bottom:3px}
 .hm-mlbl{width:13px;font-size:9px;color:var(--text3);text-align:center}
-.hm-legend{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);margin-top:10px;flex-wrap:wrap}
-.hm-lc{width:11px;height:11px;border-radius:2px;flex-shrink:0}
 
-/* Chart */
-.chart-wrap{position:relative;width:100%}
-.legend{display:flex;gap:12px;font-size:11px;color:var(--text3);margin-bottom:8px;flex-wrap:wrap}
-.legend span{display:flex;align-items:center;gap:4px}
-.l-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+/* Calendar */
+.cal-hdr{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px}
+.cal-hdr-d{font-size:10px;color:var(--text3);text-align:center;font-weight:500}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-day{aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+.cal-done{background:var(--accent);color:#fff}
+.cal-miss{background:#fff3e0;color:#ffb74d}
+.cal-future{color:var(--text3);opacity:0.35}
+.cal-today{border:2px solid var(--accent);color:var(--accent)}
+
+/* Ring chart section */
+.date-chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.d-chip{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:var(--bg);color:var(--text3);border:1.5px solid transparent;transition:all .15s}
+.d-chip.has{border-color:var(--accent);color:var(--accent)}
+.d-chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ring-area{display:flex;gap:16px;align-items:center}
+.ring-wrap{position:relative;flex-shrink:0}
+.ring-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;width:80px}
+.ring-c-date{font-size:10px;color:var(--text3);font-weight:500}
+.ring-c-val{font-size:19px;font-weight:800;color:var(--text);line-height:1;letter-spacing:-0.5px}
+.ring-c-unit{font-size:10px;color:var(--text3)}
+.ring-metrics{flex:1}
+.rm-item{margin-bottom:10px}
+.rm-header{display:flex;justify-content:space-between;margin-bottom:4px}
+.rm-lbl{font-size:11px;color:var(--text3);font-weight:500}
+.rm-val{font-size:12px;font-weight:700;color:var(--text)}
+.rm-track{height:5px;background:var(--bg);border-radius:3px;overflow:hidden}
+.rm-bar{height:100%;border-radius:3px;transition:width .4s}
+.ring-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.rl{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text3)}
+.rl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* Timeline */
+.timeline{position:relative;padding-left:22px}
+.tl-line{position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--sep);border-radius:1px}
+.tl-item{position:relative;margin-bottom:12px;display:flex;align-items:flex-start;gap:10px}
+.tl-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;margin-top:3px;margin-left:-22px;border:2px solid var(--card)}
+.tl-body{flex:1;background:var(--bg);border-radius:var(--radius-sm);padding:10px 12px}
+.tl-date{font-size:10px;color:var(--text3);font-weight:500;margin-bottom:2px}
+.tl-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px}
+.tl-stats{display:flex;gap:8px;flex-wrap:wrap}
+.tl-s{font-size:11px;color:var(--text3)}
+.tl-s b{color:var(--text);font-weight:600}
+
+/* Weight */
+.w-list-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--sep);font-size:13px}
+.w-list-item:last-child{border-bottom:none}
+
+/* Edit modal — bottom sheet */
+#edit-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:200;align-items:flex-end}
+#edit-overlay.show{display:flex}
+#edit-sheet{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-height:88vh;overflow-y:auto;padding:20px 16px calc(var(--safe-bottom)+20px)}
+.sheet-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.sheet-close{width:28px;height:28px;border-radius:50%;background:var(--bg);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:16px}
+
+/* Confirm */
+#confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:250;align-items:center;justify-content:center;padding:20px}
+#confirm-overlay.show{display:flex}
+#confirm-box{background:var(--card);border-radius:var(--radius);padding:20px;width:100%;max-width:300px;text-align:center}
+.confirm-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px}
+.confirm-sub{font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.5}
+.confirm-btns{display:flex;gap:8px}
+.confirm-btns .btn{flex:1}
 
 /* Toast */
-#toast{position:fixed;bottom:calc(68px + var(--safe-bottom) + 12px);left:50%;transform:translateX(-50%) translateY(16px);background:var(--text);color:var(--bg);font-size:13px;padding:10px 18px;border-radius:24px;z-index:300;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap}
+#toast{position:fixed;bottom:calc(64px + var(--safe-bottom)+12px);left:50%;transform:translateX(-50%) translateY(12px);background:rgba(28,28,30,0.9);color:#fff;font-size:13px;padding:10px 18px;border-radius:24px;z-index:300;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-/* Empty */
 .empty{text-align:center;padding:28px;color:var(--text3);font-size:13px}
-
-/* Confirm dialog */
-#confirm-overlay{display:none;position:fixed;inset:0;background:rgba(44,36,22,0.4);z-index:250;align-items:center;justify-content:center;padding:16px}
-#confirm-overlay.show{display:flex}
-#confirm-box{background:var(--card);border-radius:var(--radius);padding:20px;width:100%;max-width:320px;text-align:center}
-.confirm-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px}
-.confirm-sub{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6}
-.confirm-btns{display:flex;gap:8px}
-.confirm-btns .btn{flex:1;justify-content:center}
 </style>
 </head>
 <body>
 <div id="app">
-
 <div id="header">
-  <div id="header-title"><span>100</span>_Run 健身追蹤器</div>
-  <div style="font-size:11px;color:var(--text3)" id="sync-lbl"></div>
+  <div class="hdr-title"><span>100</span>_Run</div>
+  <div class="hdr-badge" id="sync-badge">本機</div>
 </div>
 
 <div id="content">
@@ -180,11 +200,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 <div id="sec-streak" class="sec active">
   <div class="card">
     <div class="streak-hero">
-      <div style="font-size:40px;margin-bottom:6px">🔥</div>
+      <div style="font-size:44px;margin-bottom:6px">🔥</div>
       <div class="streak-num" id="sk-cur">0</div>
       <div class="streak-sub">當前連續天數</div>
     </div>
-    <div class="mg mg4" style="margin-bottom:0">
+    <div class="mg4" style="margin-bottom:0">
       <div class="mc"><div class="mc-lbl">最長連續</div><div class="mc-val" id="sk-best" style="color:var(--green)">0</div><div class="mc-unit">天</div></div>
       <div class="mc"><div class="mc-lbl">總訓練</div><div class="mc-val" id="sk-total">0</div><div class="mc-unit">天</div></div>
       <div class="mc"><div class="mc-lbl">本月</div><div class="mc-val" id="sk-month">0</div><div class="mc-unit">天</div></div>
@@ -192,27 +212,34 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
     </div>
   </div>
   <div class="card">
-    <div class="card-title">26 週熱力圖</div>
+    <div class="card-title">本月訓練日曆</div>
+    <div class="cal-hdr">
+      <div class="cal-hdr-d">一</div><div class="cal-hdr-d">二</div><div class="cal-hdr-d">三</div>
+      <div class="cal-hdr-d">四</div><div class="cal-hdr-d">五</div><div class="cal-hdr-d">六</div><div class="cal-hdr-d">日</div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div style="display:flex;gap:12px;margin-top:10px;font-size:11px;color:var(--text3);flex-wrap:wrap">
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:50%;background:var(--accent);display:inline-block"></span>已訓練</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:50%;background:#fff3e0;border:1px solid #ffb74d;display:inline-block"></span>未訓練</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:50%;background:var(--bg);opacity:0.4;display:inline-block"></span>未到</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">26週熱力圖</div>
     <div class="hm-wrap">
       <div id="hm-months" class="hm-mrow"></div>
       <div id="hm-grid" class="hm-inner"></div>
     </div>
-    <div class="hm-legend">
-      <div class="hm-lc" style="background:#e8e0d5;border:1px solid #d5c9bb"></div>無
-      <div class="hm-lc" style="background:#fbd9b0"></div>1次
-      <div class="hm-lc" style="background:#f5a855"></div>2次
-      <div class="hm-lc" style="background:#d4741f"></div>3次+
-    </div>
   </div>
   <div class="card">
-    <div class="card-title">連續段落明細</div>
+    <div class="card-title">連續段落</div>
     <div id="sk-runs"><div class="empty">尚無記錄</div></div>
   </div>
 </div>
 
 <!-- 記錄 -->
 <div id="sec-log" class="sec">
-  <div class="mg mg4">
+  <div class="mg4">
     <div class="mc"><div class="mc-lbl">本週次數</div><div class="mc-val" id="sm-cnt">0</div><div class="mc-unit">次</div></div>
     <div class="mc"><div class="mc-lbl">距離</div><div class="mc-val" id="sm-dst">0.0</div><div class="mc-unit">km</div></div>
     <div class="mc"><div class="mc-lbl">時間</div><div class="mc-val" id="sm-tm">0:00</div><div class="mc-unit">h:mm</div></div>
@@ -223,15 +250,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
     <div class="form-grid">
       <div class="fg"><label>日期</label><input type="date" id="f-date"></div>
       <div class="fg"><label>類型</label>
-        <select id="f-type">
-          <option value="run">跑步</option>
-          <option value="cycle">騎車</option>
-          <option value="swim">游泳</option>
-          <option value="other">其他</option>
-        </select>
+        <select id="f-type"><option value="run">跑步</option><option value="cycle">騎車</option><option value="swim">游泳</option><option value="other">其他</option></select>
       </div>
       <div class="fg"><label>距離 (km)</label><input type="number" id="f-dst" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></div>
-      <div class="fg"><label>時間 hh:mm:ss.ms</label><input type="text" id="f-time" placeholder="00:45:30.500" inputmode="numeric"></div>
+      <div class="fg"><label>時間 mm:ss.ms</label><input type="text" id="f-time" placeholder="42:30.500" inputmode="numeric"></div>
       <div class="fg"><label>平均心率 (bpm)</label><input type="number" id="f-hra" min="0" placeholder="—" inputmode="numeric"></div>
       <div class="fg"><label>最大心率 (bpm)</label><input type="number" id="f-hrm" min="0" placeholder="—" inputmode="numeric"></div>
       <div class="fg"><label>平均功率 (W)</label><input type="number" id="f-pwa" min="0" placeholder="—" inputmode="numeric"></div>
@@ -248,9 +270,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
         <div><div class="ac-lbl">無氧</div><div class="ac-val" id="ac-n" style="color:var(--red)">—</div></div>
       </div>
     </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="addEntry()">儲存記錄</button>
-    </div>
+    <button class="btn btn-primary" onclick="addEntry()" style="margin-top:12px">儲存記錄</button>
     <div id="log-st" class="st"></div>
   </div>
 </div>
@@ -258,8 +278,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 <!-- 歷史 -->
 <div id="sec-history" class="sec">
   <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div class="card-title" style="margin-bottom:0">訓練記錄</div>
+    <div class="card-header">
+      <div class="card-title">訓練記錄</div>
       <div style="display:flex;gap:6px">
         <button class="btn btn-secondary btn-sm" onclick="exportCSV()">CSV</button>
         <button class="btn btn-secondary btn-sm" onclick="exportXLSX()">Excel</button>
@@ -275,33 +295,70 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 
 <!-- 圖表 -->
 <div id="sec-chart" class="sec">
-  <div class="card"><div class="card-title">距離趨勢 (km)</div><div class="chart-wrap" style="height:175px"><canvas id="c-dist" role="img" aria-label="距離趨勢"></canvas></div></div>
-  <div class="card"><div class="card-title">配速趨勢 (min/km)</div><div class="chart-wrap" style="height:175px"><canvas id="c-pace" role="img" aria-label="配速趨勢"></canvas></div></div>
   <div class="card">
-    <div class="card-title">心率趨勢 (bpm)</div>
-    <div class="legend"><span><span class="l-dot" style="background:#d4741f"></span>平均</span><span><span class="l-dot" style="background:#b91c1c"></span>最大</span></div>
-    <div class="chart-wrap" style="height:175px"><canvas id="c-hr" role="img" aria-label="心率趨勢"></canvas></div>
+    <div class="card-header">
+      <div class="card-title">累積訓練環形圖</div>
+    </div>
+    <div class="date-chips" id="date-chips"></div>
+    <div class="ring-area">
+      <div class="ring-wrap">
+        <div style="position:relative;width:170px;height:170px">
+          <canvas id="c-ring" role="img" aria-label="累積訓練環形圖">訓練環形圖</canvas>
+          <div class="ring-center">
+            <div class="ring-c-date" id="rc-date">累積</div>
+            <div class="ring-c-val" id="rc-val">0</div>
+            <div class="ring-c-unit" id="rc-unit">km</div>
+          </div>
+        </div>
+        <div class="ring-legend">
+          <div class="rl"><div class="rl-dot" style="background:var(--accent)"></div>距離</div>
+          <div class="rl"><div class="rl-dot" style="background:var(--green)"></div>心率</div>
+          <div class="rl"><div class="rl-dot" style="background:var(--blue)"></div>功率</div>
+          <div class="rl"><div class="rl-dot" style="background:var(--purple)"></div>有氧</div>
+        </div>
+      </div>
+      <div class="ring-metrics">
+        <div class="rm-item">
+          <div class="rm-header"><span class="rm-lbl">距離達成</span><span class="rm-val" id="rm-dist">—</span></div>
+          <div class="rm-track"><div class="rm-bar" id="rb-dist" style="background:var(--accent);width:0%"></div></div>
+        </div>
+        <div class="rm-item">
+          <div class="rm-header"><span class="rm-lbl">平均心率</span><span class="rm-val" id="rm-hr">—</span></div>
+          <div class="rm-track"><div class="rm-bar" id="rb-hr" style="background:var(--green);width:0%"></div></div>
+        </div>
+        <div class="rm-item">
+          <div class="rm-header"><span class="rm-lbl">平均功率</span><span class="rm-val" id="rm-pw">—</span></div>
+          <div class="rm-track"><div class="rm-bar" id="rb-pw" style="background:var(--blue);width:0%"></div></div>
+        </div>
+        <div class="rm-item" style="margin-bottom:0">
+          <div class="rm-header"><span class="rm-lbl">有氧比例</span><span class="rm-val" id="rm-aero">—</span></div>
+          <div class="rm-track"><div class="rm-bar" id="rb-aero" style="background:var(--purple);width:0%"></div></div>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="card">
-    <div class="card-title">功率趨勢 (W)</div>
-    <div class="legend"><span><span class="l-dot" style="background:#5b3fa0"></span>平均</span><span><span class="l-dot" style="background:#9333ea"></span>最大</span></div>
-    <div class="chart-wrap" style="height:175px"><canvas id="c-pw" role="img" aria-label="功率趨勢"></canvas></div>
+    <div class="card-title">訓練時間軸</div>
+    <div class="timeline" id="tl-wrap">
+      <div class="tl-line"></div>
+      <div class="empty" id="tl-empty">尚無記錄</div>
+    </div>
   </div>
   <div class="card">
-    <div class="card-title">有氧 / 無氧 時間 (min)</div>
-    <div class="legend"><span><span class="l-dot" style="background:#2d6a2d"></span>有氧</span><span><span class="l-dot" style="background:#b91c1c"></span>無氧</span></div>
-    <div class="chart-wrap" style="height:175px"><canvas id="c-zone" role="img" aria-label="有氧無氧分佈"></canvas></div>
+    <div class="card-title">體重趨勢</div>
+    <div style="position:relative;width:100%;height:160px">
+      <canvas id="c-wt" role="img" aria-label="體重趨勢折線圖">體重趨勢</canvas>
+    </div>
   </div>
-  <div class="card"><div class="card-title">體重趨勢 (kg)</div><div class="chart-wrap" style="height:175px"><canvas id="c-wt" role="img" aria-label="體重趨勢"></canvas></div></div>
 </div>
 
 <!-- 體重 -->
 <div id="sec-weight" class="sec">
-  <div class="mg mg4">
+  <div class="mg4">
     <div class="mc"><div class="mc-lbl">目前</div><div class="mc-val" id="w-cur">—</div><div class="mc-unit">kg</div></div>
     <div class="mc"><div class="mc-lbl">最低</div><div class="mc-val" id="w-min" style="color:var(--green)">—</div><div class="mc-unit">kg</div></div>
     <div class="mc"><div class="mc-lbl">最高</div><div class="mc-val" id="w-max">—</div><div class="mc-unit">kg</div></div>
-    <div class="mc"><div class="mc-lbl">總變化</div><div class="mc-val" id="w-delta">—</div><div class="mc-unit">kg</div></div>
+    <div class="mc"><div class="mc-lbl">變化</div><div class="mc-val" id="w-delta">—</div><div class="mc-unit">kg</div></div>
   </div>
   <div class="card">
     <div class="card-title">記錄體重</div>
@@ -313,88 +370,81 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
     <div id="w-st" class="st"></div>
   </div>
   <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div class="card-title" style="margin-bottom:0">體重記錄</div>
-    </div>
+    <div class="card-header"><div class="card-title">體重記錄</div></div>
     <div class="log-list" id="w-list"><div class="empty">尚無記錄</div></div>
   </div>
 </div>
 
-<!-- Sheets -->
-<div id="sec-sheets" class="sec">
+<!-- 設定 -->
+<div id="sec-settings" class="sec">
   <div class="card">
-    <div class="card-title">Google Sheets 同步設定</div>
+    <div class="card-title">Google Sheets 同步</div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-      <span id="conn-dot" style="width:9px;height:9px;border-radius:50%;background:var(--text3);flex-shrink:0;display:inline-block"></span>
-      <span id="conn-lbl" style="font-size:13px;color:var(--text2)">未設定</span>
+      <span id="conn-dot" style="width:9px;height:9px;border-radius:50%;background:var(--text3);display:inline-block;flex-shrink:0"></span>
+      <span id="conn-lbl" style="font-size:13px;color:var(--text3)">未設定</span>
     </div>
     <div class="fg" style="margin-bottom:12px">
       <label>Apps Script Webhook URL</label>
       <input type="url" id="sh-url" placeholder="https://script.google.com/macros/s/xxxxx/exec" style="font-size:12px">
     </div>
-    <div class="btn-row">
+    <div class="btn-row" style="margin-top:0">
       <button class="btn btn-primary btn-sm" onclick="saveCfg()">儲存</button>
-      <button class="btn btn-green btn-sm" onclick="syncAll()">全部同步</button>
-      <button class="btn btn-secondary btn-sm" onclick="testConn()">測試連線</button>
+      <button class="btn btn-secondary btn-sm" onclick="syncAll()">全部同步</button>
+      <button class="btn btn-secondary btn-sm" onclick="testConn()">測試</button>
     </div>
     <div id="sh-st" class="st"></div>
-    <div style="margin-top:12px;font-size:12px;color:var(--text3)" id="sh-stats">尚未同步</div>
+    <div style="margin-top:10px;font-size:12px;color:var(--text3)" id="sh-stats">尚未同步</div>
   </div>
   <div class="card">
     <div class="card-title">匯出資料</div>
-    <div class="btn-row">
+    <div class="btn-row" style="margin-top:0">
       <button class="btn btn-secondary" onclick="exportCSV()">下載 CSV</button>
       <button class="btn btn-secondary" onclick="exportXLSX()">下載 Excel</button>
     </div>
   </div>
   <div class="card">
-    <div class="card-title">PWA 安裝說明</div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.9">
-      <b style="color:var(--text)">iOS Safari：</b>底部分享按鈕 → 加入主畫面<br>
-      <b style="color:var(--text)">Windows Chrome：</b>網址列右側安裝圖示 → 安裝<br>
-      <b style="color:var(--text)">Android Chrome：</b>選單 → 新增至主畫面
+    <div class="card-title">安裝 App</div>
+    <div style="font-size:13px;color:var(--text3);line-height:1.9">
+      <b style="color:var(--text)">iOS：</b>Safari → 分享 → 加入主畫面<br>
+      <b style="color:var(--text)">Windows：</b>Chrome → 網址列安裝圖示
     </div>
+    <button class="btn btn-primary" style="margin-top:12px" id="install-btn" onclick="installPWA()" hidden>安裝至主畫面</button>
   </div>
 </div>
 
 </div><!-- /content -->
 
 <nav id="nav">
-  <button class="nav-btn active" onclick="sw('streak')" id="nav-streak"><span class="nav-icon">🔥</span>連續</button>
-  <button class="nav-btn" onclick="sw('log')" id="nav-log"><span class="nav-icon">➕</span>記錄</button>
-  <button class="nav-btn" onclick="sw('history')" id="nav-history"><span class="nav-icon">📋</span>歷史</button>
-  <button class="nav-btn" onclick="sw('chart')" id="nav-chart"><span class="nav-icon">📈</span>圖表</button>
-  <button class="nav-btn" onclick="sw('weight')" id="nav-weight"><span class="nav-icon">⚖️</span>體重</button>
-  <button class="nav-btn" onclick="sw('sheets')" id="nav-sheets"><span class="nav-icon">☁️</span>同步</button>
+  <button class="nav-btn active" onclick="sw('streak')" id="nav-streak"><i class="ti ti-flame" aria-hidden="true"></i><span>連續</span></button>
+  <button class="nav-btn" onclick="sw('log')" id="nav-log"><i class="ti ti-circle-plus" aria-hidden="true"></i><span>記錄</span></button>
+  <button class="nav-btn" onclick="sw('history')" id="nav-history"><i class="ti ti-clipboard-list" aria-hidden="true"></i><span>歷史</span></button>
+  <button class="nav-btn" onclick="sw('chart')" id="nav-chart"><i class="ti ti-chart-donut" aria-hidden="true"></i><span>圖表</span></button>
+  <button class="nav-btn" onclick="sw('weight')" id="nav-weight"><i class="ti ti-scale" aria-hidden="true"></i><span>體重</span></button>
+  <button class="nav-btn" onclick="sw('settings')" id="nav-settings"><i class="ti ti-settings" aria-hidden="true"></i><span>設定</span></button>
 </nav>
 </div>
 
-<!-- Edit Modal -->
+<!-- Edit bottom sheet -->
 <div id="edit-overlay">
-  <div id="edit-modal">
-    <div class="modal-title">
-      <span>編輯訓練記錄</span>
-      <button class="modal-close" onclick="closeEdit()">✕</button>
+  <div id="edit-sheet">
+    <div class="sheet-title">
+      <span id="edit-mode-lbl">編輯記錄</span>
+      <button class="sheet-close" onclick="closeEdit()">✕</button>
     </div>
     <input type="hidden" id="e-id">
     <div class="form-grid">
       <div class="fg"><label>日期</label><input type="date" id="e-date"></div>
       <div class="fg"><label>類型</label>
-        <select id="e-type">
-          <option value="run">跑步</option>
-          <option value="cycle">騎車</option>
-          <option value="swim">游泳</option>
-          <option value="other">其他</option>
-        </select>
+        <select id="e-type"><option value="run">跑步</option><option value="cycle">騎車</option><option value="swim">游泳</option><option value="other">其他</option></select>
       </div>
       <div class="fg"><label>距離 (km)</label><input type="number" id="e-dst" min="0" step="0.01" inputmode="decimal"></div>
-      <div class="fg"><label>時間 hh:mm:ss.ms</label><input type="text" id="e-time" inputmode="numeric"></div>
+      <div class="fg"><label>時間 mm:ss.ms</label><input type="text" id="e-time" inputmode="numeric"></div>
       <div class="fg"><label>平均心率</label><input type="number" id="e-hra" min="0" inputmode="numeric"></div>
       <div class="fg"><label>最大心率</label><input type="number" id="e-hrm" min="0" inputmode="numeric"></div>
       <div class="fg"><label>平均功率 (W)</label><input type="number" id="e-pwa" min="0" inputmode="numeric"></div>
       <div class="fg"><label>最大功率 (W)</label><input type="number" id="e-pwm" min="0" inputmode="numeric"></div>
       <div class="fg"><label>熱量 (kcal)</label><input type="number" id="e-cal" min="0" inputmode="numeric"></div>
-      <div class="fg"><label>心率基準 (bpm)</label><input type="number" id="e-hrb" min="100" max="250" inputmode="numeric"></div>
+      <div class="fg"><label>心率基準</label><input type="number" id="e-hrb" min="100" max="250" inputmode="numeric"></div>
       <div class="fg form-full"><label>備註</label><input type="text" id="e-note"></div>
     </div>
     <div class="btn-row">
@@ -404,14 +454,14 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
   </div>
 </div>
 
-<!-- Confirm Dialog -->
+<!-- Confirm dialog -->
 <div id="confirm-overlay">
   <div id="confirm-box">
     <div class="confirm-title" id="confirm-title">確定刪除？</div>
     <div class="confirm-sub" id="confirm-sub">此操作無法復原</div>
     <div class="confirm-btns">
       <button class="btn btn-secondary" onclick="confirmNo()">取消</button>
-      <button class="btn btn-del" onclick="confirmYes()">確定刪除</button>
+      <button class="btn btn-danger" onclick="confirmYes()">刪除</button>
     </div>
   </div>
 </div>
@@ -421,21 +471,57 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-// ── State ─────────────────────────────────────────────
-let logs=[], weights=[], charts={}, shUrl='', confirmCb=null;
-try{logs=JSON.parse(localStorage.getItem('r100v2_logs')||'[]');}catch(e){logs=[];}
-try{weights=JSON.parse(localStorage.getItem('r100v2_wts')||'[]');}catch(e){weights=[];}
-try{shUrl=localStorage.getItem('r100v2_url')||'';}catch(e){}
+// ── 資料遷移：向下相容所有舊版 key ──────────────────────
+const KEYS = {logs:'r100v3_logs', wts:'r100v3_wts', url:'r100v3_url'};
+const OLD_KEYS = [
+  {logs:'r100v2_logs', wts:'r100v2_wts', url:'r100v2_url'},
+  {logs:'ft4_logs',    wts:'ft4_wts',    url:'ft4_url'},
+  {logs:'ft3_logs',    wts:'ft3_wts',    url:'ft3_url'},
+  {logs:'ft2_logs',    wts:'ft2_wts',    url:''},
+  {logs:'ft_logs',     wts:'ft_weights', url:''},
+];
+function migrate(){
+  if(localStorage.getItem(KEYS.logs)) return;
+  for(const ok of OLD_KEYS){
+    const l=localStorage.getItem(ok.logs);
+    if(l){
+      localStorage.setItem(KEYS.logs, l);
+      const w=localStorage.getItem(ok.wts);
+      if(w) localStorage.setItem(KEYS.wts, w);
+      const u=ok.url?localStorage.getItem(ok.url):'';
+      if(u) localStorage.setItem(KEYS.url, u);
+      console.log('資料從舊版遷移成功:', ok.logs);
+      return;
+    }
+  }
+}
+migrate();
 
-function save(){localStorage.setItem('r100v2_logs',JSON.stringify(logs));localStorage.setItem('r100v2_wts',JSON.stringify(weights));}
+// ── State ──────────────────────────────────────────────
+let logs=[], weights=[], shUrl='', ringChart=null, wtChart=null, confirmCb=null, deferredPrompt=null;
+try{logs=JSON.parse(localStorage.getItem(KEYS.logs)||'[]');}catch(e){logs=[];}
+try{weights=JSON.parse(localStorage.getItem(KEYS.wts)||'[]');}catch(e){weights=[];}
+try{shUrl=localStorage.getItem(KEYS.url)||'';}catch(e){}
+
+function save(){
+  localStorage.setItem(KEYS.logs,JSON.stringify(logs));
+  localStorage.setItem(KEYS.wts,JSON.stringify(weights));
+}
+
 function today(){return new Date().toISOString().split('T')[0];}
 function dayDiff(a,b){return Math.round((new Date(b)-new Date(a))/86400000);}
 
-// ── Toast & Status ─────────────────────────────────────
-function toast(msg,dur=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
-function showSt(id,type,msg){const el=document.getElementById(id);el.className='st st-'+type;el.textContent=msg;if(type==='ok')setTimeout(()=>{el.className='st';},3000);}
-
-// ── Confirm Dialog ─────────────────────────────────────
+// ── Toast & UI ─────────────────────────────────────────
+function toast(msg,dur=2400){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+function showSt(id,type,msg){
+  const el=document.getElementById(id);
+  el.className='st st-'+type;el.textContent=msg;
+  if(type==='ok')setTimeout(()=>{el.className='st';},3000);
+}
 function confirm2(title,sub,cb){
   document.getElementById('confirm-title').textContent=title;
   document.getElementById('confirm-sub').textContent=sub;
@@ -446,16 +532,21 @@ function confirmYes(){document.getElementById('confirm-overlay').classList.remov
 function confirmNo(){document.getElementById('confirm-overlay').classList.remove('show');confirmCb=null;}
 
 // ── Time utils ─────────────────────────────────────────
+// 支援新格式 mm:ss.ms 與舊格式 hh:mm:ss.ms
 function parseTime(s){
   if(!s)return 0;
-  const m=s.match(/^(\d{1,2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?$/);
-  if(!m)return 0;
-  return parseInt(m[1])*3600+parseInt(m[2])*60+parseInt(m[3])+(m[4]?parseInt(m[4].padEnd(3,'0'))/1000:0);
+  // mm:ss.ms
+  let m=s.match(/^(\d{1,2}):(\d{2})(?:\.(\d{1,3}))?$/);
+  if(m) return parseInt(m[1])*60+parseInt(m[2])+(m[3]?parseInt(m[3].padEnd(3,'0'))/1000:0);
+  // hh:mm:ss.ms (舊格式相容)
+  m=s.match(/^(\d{1,2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?$/);
+  if(m) return parseInt(m[1])*3600+parseInt(m[2])*60+parseInt(m[3])+(m[4]?parseInt(m[4].padEnd(3,'0'))/1000:0);
+  return 0;
 }
 function fmtTime(s){
   if(!s)return '—';
-  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=Math.floor(s%60),ms=Math.round((s%1)*1000);
-  return `${h}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}.${String(ms).padStart(3,'0')}`;
+  const m=Math.floor(s/60),sc=Math.floor(s%60),ms=Math.round((s%1)*1000);
+  return `${m}:${String(sc).padStart(2,'0')}.${String(ms).padStart(3,'0')}`;
 }
 function fmtHM(s){return `${Math.floor(s/3600)}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}`;}
 function calcPace(d,s){if(!d||!s)return null;const spk=s/d;return{min:Math.floor(spk/60),sec:Math.round(spk%60),total:spk};}
@@ -488,41 +579,40 @@ function liveCalc(){
 ['f-dst','f-time','f-hra','f-hrb'].forEach(id=>document.getElementById(id).addEventListener('input',liveCalc));
 
 // ── Build entry ────────────────────────────────────────
-function buildEntry(prefix){
-  const dist=parseFloat(document.getElementById(prefix+'-dst').value)||0;
-  const sec=parseTime(document.getElementById(prefix+'-time').value);
-  const hrAvg=parseFloat(document.getElementById(prefix+'-hra').value)||0;
-  const hrMax=parseFloat(document.getElementById(prefix+'-hrm').value)||0;
-  const pwAvg=parseFloat(document.getElementById(prefix+'-pwa').value)||0;
-  const pwMax=parseFloat(document.getElementById(prefix+'-pwm').value)||0;
-  const base=parseFloat(document.getElementById(prefix+'-hrb').value)||190;
+function buildEntry(px){
+  const dist=parseFloat(document.getElementById(px+'-dst').value)||0;
+  const sec=parseTime(document.getElementById(px+'-time').value);
+  const hrAvg=parseFloat(document.getElementById(px+'-hra').value)||0;
+  const hrMax=parseFloat(document.getElementById(px+'-hrm').value)||0;
+  const pwAvg=parseFloat(document.getElementById(px+'-pwa').value)||0;
+  const pwMax=parseFloat(document.getElementById(px+'-pwm').value)||0;
+  const base=parseFloat(document.getElementById(px+'-hrb').value)||190;
   const z=calcZone(hrAvg,base);
   return{
-    date:document.getElementById(prefix+'-date').value,
-    type:document.getElementById(prefix+'-type').value,
+    date:document.getElementById(px+'-date').value,
+    type:document.getElementById(px+'-type').value,
     dist,sec,hrAvg,hrMax,pwAvg,pwMax,
-    cal:parseFloat(document.getElementById(prefix+'-cal').value)||0,
-    note:document.getElementById(prefix+'-note').value,
+    cal:parseFloat(document.getElementById(px+'-cal').value)||0,
+    note:document.getElementById(px+'-note').value,
     zone:z,pace:calcPace(dist,sec),
     aeroMin:z&&sec?Math.round(sec/60*z.aero/100):0,
     anaeroMin:z&&sec?Math.round(sec/60*z.anaero/100):0
   };
 }
 
-// ── Add entry ──────────────────────────────────────────
+// ── Add / Edit / Delete ────────────────────────────────
 function addEntry(){
   const e={id:Date.now(),...buildEntry('f')};
   if(!e.date){toast('請選擇日期');return;}
   logs.push(e);logs.sort((a,b)=>a.date.localeCompare(b.date));
-  save();renderSummary();renderStreak();
-  syncEntry(e);
+  save();renderSummary();renderStreak();renderCalendar();
+  if(shUrl) syncEntry(e);
   ['f-dst','f-time','f-hra','f-hrm','f-pwa','f-pwm','f-cal','f-note'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-date').value=today();
   document.getElementById('ac-box').style.display='none';
   toast('記錄已儲存 ✓');
 }
 
-// ── Edit ──────────────────────────────────────────────
 function openEdit(id){
   const e=logs.find(l=>l.id===id);if(!e)return;
   document.getElementById('e-id').value=id;
@@ -535,7 +625,7 @@ function openEdit(id){
   document.getElementById('e-pwa').value=e.pwAvg||'';
   document.getElementById('e-pwm').value=e.pwMax||'';
   document.getElementById('e-cal').value=e.cal||'';
-  document.getElementById('e-hrb').value=e.hrBase||190;
+  document.getElementById('e-hrb').value=190;
   document.getElementById('e-note').value=e.note||'';
   document.getElementById('edit-overlay').classList.add('show');
 }
@@ -543,29 +633,27 @@ function closeEdit(){document.getElementById('edit-overlay').classList.remove('s
 function saveEdit(){
   const id=parseInt(document.getElementById('e-id').value);
   const idx=logs.findIndex(l=>l.id===id);if(idx<0)return;
-  const updated={id,...buildEntry('e')};
-  if(!updated.date){toast('請選擇日期');return;}
-  logs[idx]=updated;
-  logs.sort((a,b)=>a.date.localeCompare(b.date));
-  save();renderHistory();renderSummary();renderStreak();
+  const u={id,...buildEntry('e')};
+  if(!u.date){toast('請選擇日期');return;}
+  logs[idx]=u;logs.sort((a,b)=>a.date.localeCompare(b.date));
+  save();renderHistory();renderSummary();renderStreak();renderCalendar();
   closeEdit();toast('已修改 ✓');
 }
-
-// ── Delete ─────────────────────────────────────────────
 function delEntry(id){
   const e=logs.find(l=>l.id===id);
-  confirm2('確定刪除此筆記錄？',`${e?e.date:''} ${e?tLbl[e.type]:''}  — 此操作無法復原`,()=>{
-    logs=logs.filter(l=>l.id!==id);save();renderHistory();renderSummary();renderStreak();toast('已刪除');
+  confirm2('確定刪除此記錄？',(e?e.date+' '+tLbl[e.type]:'')+'  — 無法復原',()=>{
+    logs=logs.filter(l=>l.id!==id);save();
+    renderHistory();renderSummary();renderStreak();renderCalendar();
+    toast('已刪除');
   });
 }
 
-// ── Sheets ─────────────────────────────────────────────
+// ── Sheets sync ────────────────────────────────────────
 async function getReq(params){
   if(!shUrl)return;
-  try{await fetch(shUrl+'?'+new URLSearchParams(params).toString(),{method:'GET',mode:'no-cors'});}catch(e){}
+  try{await fetch(shUrl+'?'+new URLSearchParams(params),{method:'GET',mode:'no-cors'});}catch(e){}
 }
 function syncEntry(e){
-  if(!shUrl)return;
   getReq({type:'workout',type2:e.type,id:e.id,date:e.date,dist:e.dist,sec:e.sec,
     timeFmt:fmtTime(e.sec),pace:e.pace?fmtPace(e.pace):'',hrAvg:e.hrAvg,hrMax:e.hrMax,
     pwAvg:e.pwAvg,pwMax:e.pwMax,cal:e.cal,aeroMin:e.aeroMin,anaeroMin:e.anaeroMin,
@@ -573,28 +661,31 @@ function syncEntry(e){
 }
 function saveCfg(){
   shUrl=document.getElementById('sh-url').value.trim();
-  localStorage.setItem('r100v2_url',shUrl);
-  document.getElementById('conn-dot').style.background=shUrl?'#2d6a2d':'var(--text3)';
-  document.getElementById('conn-lbl').textContent=shUrl?'已設定':'未設定';
-  document.getElementById('sync-lbl').textContent=shUrl?'☁ 已連線':'';
-  showSt('sh-st','ok','URL 已儲存 ✓');
+  localStorage.setItem(KEYS.url,shUrl);
+  document.getElementById('conn-dot').style.background=shUrl?'#30d158':'var(--text3)';
+  document.getElementById('conn-lbl').textContent=shUrl?'已設定 ✓':'未設定';
+  document.getElementById('sync-badge').textContent=shUrl?'☁ 已連線':'本機';
+  showSt('sh-st','ok','已儲存');
 }
 async function testConn(){
   saveCfg();if(!shUrl){toast('請先輸入 URL');return;}
   showSt('sh-st','pend','測試中...');
   try{const r=await fetch(shUrl+'?type=test',{mode:'cors'});await r.json();showSt('sh-st','ok','連線正常 ✓');}
-  catch(e){showSt('sh-st','err','CORS 限制（正常現象）— 直接點「全部同步」測試寫入');}
+  catch(e){showSt('sh-st','err','CORS 限制（正常現象）— 直接點全部同步測試寫入');}
 }
 async function syncAll(){
   saveCfg();if(!shUrl){toast('請先輸入 URL');return;}
   showSt('sh-st','pend','同步中...');
-  const workouts=logs.map(e=>({id:e.id,date:e.date,type:e.type,dist:e.dist,sec:e.sec,timeFmt:fmtTime(e.sec),pace:e.pace?fmtPace(e.pace):'',hrAvg:e.hrAvg,hrMax:e.hrMax,pwAvg:e.pwAvg,pwMax:e.pwMax,cal:e.cal,aeroMin:e.aeroMin||0,anaeroMin:e.anaeroMin||0,zone:e.zone?e.zone.name:'',note:e.note}));
+  const workouts=logs.map(e=>({id:e.id,date:e.date,type:e.type,dist:e.dist,sec:e.sec,
+    timeFmt:fmtTime(e.sec),pace:e.pace?fmtPace(e.pace):'',hrAvg:e.hrAvg,hrMax:e.hrMax,
+    pwAvg:e.pwAvg,pwMax:e.pwMax,cal:e.cal,aeroMin:e.aeroMin||0,anaeroMin:e.anaeroMin||0,
+    zone:e.zone?e.zone.name:'',note:e.note}));
   const payload=encodeURIComponent(JSON.stringify({workouts,weights}));
   try{
-    await fetch(shUrl+'?type=sync_all&payload='+payload,{method:'GET',mode:'no-cors'});
-    showSt('sh-st','ok','已送出同步指令 ✓ 請確認試算表');
-    document.getElementById('sh-stats').textContent=`上次同步：${new Date().toLocaleString('zh-TW')} | 訓練 ${logs.length} 筆 / 體重 ${weights.length} 筆`;
-  }catch(e){showSt('sh-st','err','同步失敗：'+e.message);}
+    await fetch(shUrl+'?type=sync_all&payload='+payload,{mode:'no-cors'});
+    showSt('sh-st','ok','已送出 ✓ 請確認試算表');
+    document.getElementById('sh-stats').textContent=`上次：${new Date().toLocaleString('zh-TW')} | 訓練${logs.length}筆`;
+  }catch(e){showSt('sh-st','err','失敗：'+e.message);}
 }
 
 // ── Summary ────────────────────────────────────────────
@@ -609,31 +700,30 @@ function renderSummary(){
 
 // ── History ────────────────────────────────────────────
 const tLbl={run:'跑步',cycle:'騎車',swim:'游泳',other:'其他'};
-const tBdg={run:'b-run',cycle:'b-cycle',swim:'b-swim',other:'b-other'};
+const tIcon={run:'🏃',cycle:'🚴',swim:'🏊',other:'⚡'};
+const tColor={run:'#fff3e0',cycle:'#e8f5e9',swim:'#e3f2fd',other:'#f3e5f5'};
 
 function renderHistory(){
   const el=document.getElementById('log-list');
-  if(!logs.length){el.innerHTML='<div class="empty">尚無記錄<br>請到「記錄」分頁新增</div>';renderPR();return;}
+  if(!logs.length){el.innerHTML='<div class="empty">尚無記錄</div>';renderPR();return;}
   el.innerHTML=[...logs].reverse().map(l=>{
-    const p=l.pace?fmtPace(l.pace)+' /km':'';
-    const z=l.zone?`有${l.aeroMin}min / 無${l.anaeroMin}min [${l.zone.name}]`:'';
-    const hr=l.hrAvg?`HR ${l.hrAvg}/${l.hrMax||'—'} bpm`:'';
-    const pw=l.pwAvg?`PWR ${l.pwAvg}/${l.pwMax||'—'} W`:'';
+    const p=l.pace?fmtPace(l.pace)+'/km':'';
+    const z=l.zone?`${l.zone.name} 有${l.aeroMin}min`:'';
+    const hr=l.hrAvg?`HR ${l.hrAvg}/${l.hrMax||'—'}bpm`:'';
+    const pw=l.pwAvg?`${l.pwAvg}/${l.pwMax||'—'}W`:'';
     return`<div class="log-item">
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;flex-wrap:wrap">
-          <span class="log-date">${l.date}</span>
-          <span class="badge ${tBdg[l.type]}">${tLbl[l.type]}</span>
-        </div>
+      <div class="log-icon" style="background:${tColor[l.type]||tColor.other}">${tIcon[l.type]||'⚡'}</div>
+      <div class="log-body">
+        <div class="log-date">${l.date} <span style="font-size:11px;color:var(--text3);font-weight:400">${tLbl[l.type]}</span></div>
         <div class="log-meta">
           ${l.dist?l.dist+'km &nbsp;':''}${l.sec?fmtTime(l.sec)+'&nbsp;':''}${p?p+'&nbsp;':''}<br>
           ${hr}${hr&&pw?' · ':''}${pw}<br>
-          ${z}${l.note?'<br>📝 '+l.note:''}
+          ${z}${l.note?'<br>'+l.note:''}
         </div>
       </div>
       <div class="log-actions">
-        <button class="icon-btn" onclick="openEdit(${l.id})" title="編輯" aria-label="編輯">✏️</button>
-        <button class="icon-btn icon-btn-del" onclick="delEntry(${l.id})" title="刪除" aria-label="刪除">🗑</button>
+        <button class="icon-btn" onclick="openEdit(${l.id})" aria-label="編輯"><i class="ti ti-edit" style="font-size:16px"></i></button>
+        <button class="icon-btn icon-btn-del" onclick="delEntry(${l.id})" aria-label="刪除"><i class="ti ti-trash" style="font-size:16px"></i></button>
       </div>
     </div>`;
   }).join('');
@@ -648,10 +738,10 @@ function renderPR(){
     const f=logs.filter(l=>l.type===t&&l.dist>0);
     if(f.length){const b=f.reduce((a,c)=>a.dist>c.dist?a:c);items.push({lbl:tLbl[t]+' 最遠',val:b.dist+'km',date:b.date});}
     const fp=logs.filter(l=>l.type===t&&l.pace&&l.dist>=1);
-    if(fp.length){const b=fp.reduce((a,c)=>a.pace.total<c.pace.total?a:c);items.push({lbl:tLbl[t]+' 最快配速',val:fmtPace(b.pace)+'/km',date:b.date});}
+    if(fp.length){const b=fp.reduce((a,c)=>a.pace.total<c.pace.total?a:c);items.push({lbl:tLbl[t]+' 最快',val:fmtPace(b.pace)+'/km',date:b.date});}
   });
-  const hm=logs.filter(l=>l.hrMax>0);if(hm.length){const b=hm.reduce((a,c)=>a.hrMax>c.hrMax?a:c);items.push({lbl:'最高心率',val:b.hrMax+' bpm',date:b.date});}
-  const pm=logs.filter(l=>l.pwMax>0);if(pm.length){const b=pm.reduce((a,c)=>a.pwMax>c.pwMax?a:c);items.push({lbl:'最高功率',val:b.pwMax+' W',date:b.date});}
+  const hm=logs.filter(l=>l.hrMax>0);if(hm.length){const b=hm.reduce((a,c)=>a.hrMax>c.hrMax?a:c);items.push({lbl:'最高心率',val:b.hrMax+'bpm',date:b.date});}
+  const pm=logs.filter(l=>l.pwMax>0);if(pm.length){const b=pm.reduce((a,c)=>a.pwMax>c.pwMax?a:c);items.push({lbl:'最高功率',val:b.pwMax+'W',date:b.date});}
   el.innerHTML=items.map(i=>`<div class="pr-c"><div class="pr-lbl">${i.lbl}</div><div class="pr-val">${i.val}</div><div class="pr-date">${i.date}</div></div>`).join('')||'<div class="empty">尚無PR</div>';
 }
 
@@ -680,16 +770,15 @@ function renderStreak(){
   const s=new Date();s.setDate(s.getDate()-182);
   const allD=[];for(let d=new Date(s);d<=new Date();d.setDate(d.getDate()+1))allD.push(d.toISOString().split('T')[0]);
   document.getElementById('sk-rate').textContent=allD.length?Math.round(dates.filter(d=>d>=s.toISOString().split('T')[0]).length/allD.length*100):0;
-  renderHeatmap(dates);
+  renderHeatmap(dates);renderCalendar();
   const el=document.getElementById('sk-runs');
   if(!runs.length){el.innerHTML='<div class="empty">尚無連續記錄</div>';return;}
   const bDays=Math.max(...runs.map(r=>r.days));
-  el.innerHTML=runs.map(r=>`<div class="streak-run">
-    <span class="s-badge${r.days===bDays?' best':''}">${r.days}天</span>
-    <span style="font-weight:600">${r.start}</span>
+  el.innerHTML=runs.map(r=>`<div class="s-run">
+    <span class="s-badge${r.days===bDays?' best':''}">${r.days}天${r.days===bDays?' 🏆':''}</span>
+    <span style="font-weight:700">${r.start}</span>
     <span style="color:var(--text3)">→</span>
-    <span style="font-weight:600">${r.end}</span>
-    ${r.days===bDays?'<span style="font-size:11px;color:var(--green)">🏆 最長</span>':''}
+    <span style="font-weight:700">${r.end}</span>
   </div>`).join('');
 }
 function renderHeatmap(dates){
@@ -712,12 +801,128 @@ function renderHeatmap(dates){
     col.forEach(d=>{
       const cell=document.createElement('div');cell.className='hm-cell';
       const c=cntMap[d]||0;
-      cell.style.background=c===0?'#e8e0d5':c===1?'#fbd9b0':c===2?'#f5a855':'#d4741f';
+      cell.style.background=c===0?'var(--bg)':c===1?'#ffcc80':c===2?'#ffa040':'#ff9500';
       cell.title=d+(c?` (${c}次)`:'');
       colDiv.appendChild(cell);
     });
     gEl.appendChild(colDiv);
   });
+}
+function renderCalendar(){
+  const trainedDates=new Set(logs.map(l=>l.date));
+  const now=new Date(),yr=now.getFullYear(),mo=now.getMonth();
+  const firstDay=new Date(yr,mo,1).getDay();
+  const daysInMonth=new Date(yr,mo+1,0).getDate();
+  const todayD=now.getDate();
+  const grid=document.getElementById('cal-grid');
+  grid.innerHTML='';
+  const offset=firstDay===0?6:firstDay-1;
+  for(let i=0;i<offset;i++){const el=document.createElement('div');el.className='cal-day';grid.appendChild(el);}
+  for(let d=1;d<=daysInMonth;d++){
+    const el=document.createElement('div');el.textContent=d;
+    const dateStr=`${yr}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    if(d>todayD) el.className='cal-day cal-future';
+    else if(d===todayD) el.className='cal-day cal-today';
+    else if(trainedDates.has(dateStr)) el.className='cal-day cal-done';
+    else el.className='cal-day cal-miss';
+    grid.appendChild(el);
+  }
+}
+
+// ── Ring chart ─────────────────────────────────────────
+const TRACK='rgba(0,0,0,0.07)';
+function calcRingData(slice){
+  if(!slice.length)return{dist:0,hr:0,pw:0,aero:0};
+  const dist=+slice.reduce((s,l)=>s+l.dist,0).toFixed(1);
+  const hr=Math.round(slice.filter(l=>l.hrAvg>0).reduce((s,l,_,a)=>s+l.hrAvg/a.length,0));
+  const pw=Math.round(slice.filter(l=>l.pwAvg>0).reduce((s,l,_,a)=>s+l.pwAvg/a.length,0));
+  const aero=Math.round(slice.filter(l=>l.aeroMin||l.anaeroMin).reduce((s,l,_,a)=>s+(l.aeroMin/(l.aeroMin+l.anaeroMin||1)*100)/a.length,0));
+  return{dist,hr,pw,aero};
+}
+function updateRing(idx){
+  const isAll=idx<0;
+  const sorted=[...logs].sort((a,b)=>a.date.localeCompare(b.date));
+  const slice=isAll?sorted:sorted.slice(0,idx+1);
+  const{dist,hr,pw,aero}=calcRingData(slice);
+  const maxDist=Math.max(200,dist*1.2);
+  const dp=Math.min(dist/maxDist*100,100);
+  const hp=hr?Math.min((hr-100)/100*100,100):0;
+  const pp=pw?Math.min(pw/350*100,100):0;
+  const ap=aero||0;
+  document.getElementById('rc-date').textContent=isAll?'累積':sorted[idx]?.date||'';
+  document.getElementById('rc-val').textContent=isAll?dist:(sorted[idx]?.dist.toFixed(1)||0);
+  document.getElementById('rc-unit').textContent='km';
+  document.getElementById('rm-dist').textContent=dist+'km';
+  document.getElementById('rm-hr').textContent=hr?hr+'bpm':'—';
+  document.getElementById('rm-pw').textContent=pw?pw+'W':'—';
+  document.getElementById('rm-aero').textContent=aero?aero+'%':'—';
+  document.getElementById('rb-dist').style.width=dp+'%';
+  document.getElementById('rb-hr').style.width=hp+'%';
+  document.getElementById('rb-pw').style.width=pp+'%';
+  document.getElementById('rb-aero').style.width=ap+'%';
+  if(ringChart){
+    ringChart.data.datasets[0].data=[dp,100-dp];
+    ringChart.data.datasets[1].data=[hp,100-hp];
+    ringChart.data.datasets[2].data=[pp,100-pp];
+    ringChart.data.datasets[3].data=[ap,100-ap];
+    ringChart.update('none');
+  }
+  document.querySelectorAll('.d-chip').forEach((el,i)=>el.classList.toggle('active',i-1===idx));
+}
+function buildChips(){
+  const row=document.getElementById('date-chips');
+  row.innerHTML='';
+  const all=document.createElement('div');
+  all.className='d-chip active';all.textContent='全部';
+  all.onclick=()=>updateRing(-1);row.appendChild(all);
+  const sorted=[...logs].sort((a,b)=>a.date.localeCompare(b.date));
+  sorted.forEach((l,i)=>{
+    const c=document.createElement('div');
+    c.className='d-chip has';c.textContent=l.date.slice(5);
+    c.onclick=()=>updateRing(i);row.appendChild(c);
+  });
+}
+function buildTimeline(){
+  const wrap=document.getElementById('tl-wrap');
+  const empty=document.getElementById('tl-empty');
+  const sorted=[...logs].sort((a,b)=>b.date.localeCompare(a.date));
+  document.querySelectorAll('.tl-item').forEach(el=>el.remove());
+  if(!sorted.length){empty.style.display='block';return;}
+  empty.style.display='none';
+  const dotColors={run:'#ff9500',cycle:'#30d158',swim:'#0a84ff',other:'#bf5af2'};
+  sorted.forEach(l=>{
+    const item=document.createElement('div');item.className='tl-item';
+    const hr=l.hrAvg?`HR <b>${l.hrAvg}bpm</b>`:'';
+    const pw=l.pwAvg?`功率 <b>${l.pwAvg}W</b>`:'';
+    const z=l.zone?`<b>${l.zone.name}</b>`:'';
+    item.innerHTML=`<div class="tl-dot" style="background:${dotColors[l.type]||'#888'}"></div>
+      <div class="tl-body">
+        <div class="tl-date">${l.date} · ${tIcon[l.type]||''} ${tLbl[l.type]}</div>
+        <div class="tl-name">${l.dist?l.dist+'km':''} ${l.sec?fmtTime(l.sec):''} ${l.pace?fmtPace(l.pace)+'/km':''}</div>
+        <div class="tl-stats">
+          ${hr?'<div class="tl-s">'+hr+'</div>':''}
+          ${pw?'<div class="tl-s">'+pw+'</div>':''}
+          ${z?'<div class="tl-s">'+z+'</div>':''}
+          ${l.cal?'<div class="tl-s">'+l.cal+'kcal</div>':''}
+        </div>
+      </div>`;
+    wrap.appendChild(item);
+  });
+}
+function initRingChart(){
+  if(ringChart)ringChart.destroy();
+  ringChart=new Chart(document.getElementById('c-ring'),{
+    type:'doughnut',
+    data:{datasets:[
+      {data:[0,100],backgroundColor:['#ff9500',TRACK],borderWidth:0,weight:1.3},
+      {data:[0,100],backgroundColor:['#30d158',TRACK],borderWidth:0,weight:1.3},
+      {data:[0,100],backgroundColor:['#0a84ff',TRACK],borderWidth:0,weight:1.3},
+      {data:[0,100],backgroundColor:['#bf5af2',TRACK],borderWidth:0,weight:1.3},
+    ]},
+    options:{responsive:true,maintainAspectRatio:true,cutout:'20%',
+      plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{duration:350}}
+  });
+  buildChips();buildTimeline();updateRing(-1);
 }
 
 // ── Weight ─────────────────────────────────────────────
@@ -731,9 +936,7 @@ function addWeight(){
   toast('體重已記錄 ✓');showSt('w-st','ok','儲存成功');
 }
 function delWeight(date){
-  confirm2('確定刪除體重記錄？',date+' 的紀錄將被刪除',()=>{
-    weights=weights.filter(w=>w.date!==date);save();renderWeight();toast('已刪除');
-  });
+  confirm2('確定刪除體重記錄？',date,()=>{weights=weights.filter(w=>w.date!==date);save();renderWeight();toast('已刪除');});
 }
 function renderWeight(){
   if(!weights.length){['w-cur','w-min','w-max','w-delta'].forEach(id=>document.getElementById(id).textContent='—');document.getElementById('w-list').innerHTML='<div class="empty">尚無記錄</div>';return;}
@@ -742,91 +945,61 @@ function renderWeight(){
   document.getElementById('w-min').textContent=Math.min(...v).toFixed(1);
   document.getElementById('w-max').textContent=Math.max(...v).toFixed(1);
   const d=v[v.length-1]-v[0];
-  document.getElementById('w-delta').textContent=(d>=0?'+':'')+d.toFixed(1);
-  document.getElementById('w-delta').style.color=d<=0?'var(--green)':'var(--red)';
+  const el=document.getElementById('w-delta');el.textContent=(d>=0?'+':'')+d.toFixed(1);el.style.color=d<=0?'var(--green)':'var(--red)';
   document.getElementById('w-list').innerHTML=[...weights].reverse().map(w=>`
-    <div class="log-item">
-      <div><div class="log-date">${w.date}</div><div class="log-meta">${w.val} kg</div></div>
-      <button class="icon-btn icon-btn-del" onclick="delWeight('${w.date}')" aria-label="刪除">🗑</button>
+    <div class="w-list-item">
+      <span style="font-weight:600">${w.date}</span>
+      <span style="color:var(--text3)">${w.val} kg</span>
+      <button class="icon-btn icon-btn-del" onclick="delWeight('${w.date}')" aria-label="刪除"><i class="ti ti-trash" style="font-size:15px"></i></button>
     </div>`).join('');
-}
-
-// ── Charts ─────────────────────────────────────────────
-const xT={font:{size:10},color:'#a08c78',maxRotation:45,autoSkip:true,maxTicksLimit:10};
-const yT={font:{size:10},color:'#a08c78'};
-const grd={color:'rgba(208,193,176,0.3)'};
-function mkChart(id,type,labels,datasets,opts={}){
-  if(charts[id])charts[id].destroy();
-  charts[id]=new Chart(document.getElementById(id),{type,data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},elements:{point:{radius:3}},animation:{duration:300},...opts}});
-}
-function renderCharts(){
-  const s=[...logs].sort((a,b)=>a.date.localeCompare(b.date));
-  const lbl=s.map(l=>l.date.slice(5));
-  const base={tension:0.4,fill:true,spanGaps:true,borderWidth:2};
-  mkChart('c-dist','line',lbl,[{...base,data:s.map(l=>+l.dist.toFixed(2)),borderColor:'#d4741f',backgroundColor:'rgba(212,116,31,0.12)'}],{scales:{y:{beginAtZero:true,ticks:yT,grid:grd},x:{ticks:xT,grid:grd}}});
-  mkChart('c-pace','line',lbl,[{...base,data:s.map(l=>l.pace?+(l.pace.total/60).toFixed(2):null),borderColor:'#9a4a10',backgroundColor:'rgba(154,74,16,0.1)'}],{scales:{y:{reverse:true,ticks:{...yT,callback:v=>{const m=Math.floor(v),s=Math.round((v-m)*60);return m+':'+String(s).padStart(2,'0')}},grid:grd},x:{ticks:xT,grid:grd}}});
-  mkChart('c-hr','line',lbl,[
-    {...base,data:s.map(l=>l.hrAvg||null),borderColor:'#d4741f',backgroundColor:'rgba(212,116,31,0.1)'},
-    {...base,data:s.map(l=>l.hrMax||null),borderColor:'#b91c1c',fill:false,borderDash:[4,3]}
-  ],{scales:{y:{beginAtZero:false,ticks:yT,grid:grd},x:{ticks:xT,grid:grd}}});
-  mkChart('c-pw','line',lbl,[
-    {...base,data:s.map(l=>l.pwAvg||null),borderColor:'#5b3fa0',backgroundColor:'rgba(91,63,160,0.1)'},
-    {...base,data:s.map(l=>l.pwMax||null),borderColor:'#9333ea',fill:false,borderDash:[4,3]}
-  ],{scales:{y:{beginAtZero:true,ticks:yT,grid:grd},x:{ticks:xT,grid:grd}}});
-  mkChart('c-zone','bar',lbl,[
-    {label:'有氧',data:s.map(l=>l.aeroMin||0),backgroundColor:'rgba(45,106,45,0.75)'},
-    {label:'無氧',data:s.map(l=>l.anaeroMin||0),backgroundColor:'rgba(185,28,28,0.75)'}
-  ],{scales:{x:{stacked:true,ticks:xT,grid:grd},y:{stacked:true,beginAtZero:true,ticks:yT,grid:grd}}});
-  if(weights.length){
-    mkChart('c-wt','line',weights.map(w=>w.date.slice(5)),[{...base,data:weights.map(w=>w.val),borderColor:'#2d6a2d',backgroundColor:'rgba(45,106,45,0.1)'}],{scales:{y:{ticks:yT,grid:grd},x:{ticks:xT,grid:grd}}});
-  }
+  if(wtChart)wtChart.destroy();
+  wtChart=new Chart(document.getElementById('c-wt'),{type:'line',
+    data:{labels:weights.map(w=>w.date.slice(5)),datasets:[{data:weights.map(w=>w.val),borderColor:'#30d158',backgroundColor:'rgba(48,209,88,0.1)',tension:0.4,fill:true,pointRadius:3,borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:10},color:'#8e8e93'}},x:{ticks:{font:{size:10},color:'#8e8e93',maxRotation:45,autoSkip:true,maxTicksLimit:10}}}}});
 }
 
 // ── Export ─────────────────────────────────────────────
 function exportCSV(){
-  if(!logs.length){toast('尚無訓練資料');return;}
-  const h=['ID','日期','類型','距離(km)','時間','配速(min/km)','平均心率','最大心率','平均功率','最大功率','熱量','有氧(min)','無氧(min)','心率區間','備註'];
-  const rows=logs.map(l=>[l.id,l.date,tLbl[l.type]||l.type,l.dist,fmtTime(l.sec),l.pace?fmtPace(l.pace):'',l.hrAvg,l.hrMax,l.pwAvg,l.pwMax,l.cal,l.aeroMin||0,l.anaeroMin||0,l.zone?l.zone.name:'',l.note]);
-  const csv=[h,...rows].map(r=>r.map(v=>'"'+(String(v||'').replace(/"/g,'""'))+'"').join(',')).join('\n');
-  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob);const a=document.createElement('a');
-  a.href=url;a.download=`100Run_${today()}.csv`;a.click();URL.revokeObjectURL(url);
-  toast('CSV 已下載');
+  if(!logs.length){toast('尚無資料');return;}
+  const h=['ID','日期','類型','距離(km)','時間(秒)','時間格式','配速','平均心率','最大心率','平均功率','最大功率','熱量','有氧(min)','無氧(min)','心率區間','備註'];
+  const rows=logs.map(l=>[l.id,l.date,tLbl[l.type]||l.type,l.dist,l.sec,fmtTime(l.sec),l.pace?fmtPace(l.pace):'',l.hrAvg,l.hrMax,l.pwAvg,l.pwMax,l.cal,l.aeroMin||0,l.anaeroMin||0,l.zone?l.zone.name:'',l.note]);
+  const csv=[h,...rows].map(r=>r.map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download=`100Run_${today()}.csv`;a.click();toast('CSV 已下載');
 }
 function exportXLSX(){
   if(!window.XLSX){toast('函式庫載入中...');return;}
   if(!logs.length&&!weights.length){toast('尚無資料');return;}
   const wb=XLSX.utils.book_new();
-  const wH=['ID','日期','類型','距離(km)','時間(秒)','時間格式','配速(min/km)','平均心率','最大心率','平均功率','最大功率','熱量','有氧(min)','無氧(min)','心率區間','備註'];
-  const wD=logs.map(l=>[l.id,l.date,tLbl[l.type]||l.type,l.dist,l.sec,fmtTime(l.sec),l.pace?fmtPace(l.pace):'',l.hrAvg,l.hrMax,l.pwAvg,l.pwMax,l.cal,l.aeroMin||0,l.anaeroMin||0,l.zone?l.zone.name:'',l.note]);
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([wH,...wD]),'Workouts');
+  const wH=['ID','日期','類型','距離(km)','時間(秒)','時間格式','配速','平均心率','最大心率','平均功率','最大功率','熱量','有氧(min)','無氧(min)','心率區間','備註'];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([wH,...logs.map(l=>[l.id,l.date,tLbl[l.type]||l.type,l.dist,l.sec,fmtTime(l.sec),l.pace?fmtPace(l.pace):'',l.hrAvg,l.hrMax,l.pwAvg,l.pwMax,l.cal,l.aeroMin||0,l.anaeroMin||0,l.zone?l.zone.name:'',l.note])]),'Workouts');
   if(weights.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['日期','體重(kg)'],...weights.map(w=>[w.date,w.val])]),'Weight');
-  XLSX.writeFile(wb,`100Run_${today()}.xlsx`);
-  toast('Excel 已下載');
-}
-
-// ── Nav ────────────────────────────────────────────────
-const secs=['streak','log','history','chart','weight','sheets'];
-function sw(t){
-  secs.forEach(s=>{
-    document.getElementById('sec-'+s).classList.toggle('active',s===t);
-    const n=document.getElementById('nav-'+s);if(n)n.classList.toggle('active',s===t);
-  });
-  if(t==='chart')renderCharts();
-  if(t==='history')renderHistory();
-  if(t==='weight')renderWeight();
-  if(t==='log')renderSummary();
-  if(t==='streak')renderStreak();
-  if(t==='sheets'&&shUrl){document.getElementById('sh-url').value=shUrl;document.getElementById('conn-dot').style.background='var(--green)';document.getElementById('conn-lbl').textContent='已設定';}
+  XLSX.writeFile(wb,`100Run_${today()}.xlsx`);toast('Excel 已下載');
 }
 
 // ── PWA ───────────────────────────────────────────────
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('install-btn').hidden=false;});
+function installPWA(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;});}}
+
+// ── Nav ────────────────────────────────────────────────
+const SECS=['streak','log','history','chart','weight','settings'];
+function sw(t){
+  SECS.forEach(s=>{
+    document.getElementById('sec-'+s).classList.toggle('active',s===t);
+    const n=document.getElementById('nav-'+s);if(n)n.classList.toggle('active',s===t);
+  });
+  if(t==='chart'){initRingChart();}
+  if(t==='history')renderHistory();
+  if(t==='weight')renderWeight();
+  if(t==='log')renderSummary();
+  if(t==='streak'){renderStreak();}
+  if(t==='settings'&&shUrl){document.getElementById('sh-url').value=shUrl;document.getElementById('conn-dot').style.background='#30d158';document.getElementById('conn-lbl').textContent='已設定 ✓';}
+}
 
 // ── Init ───────────────────────────────────────────────
 document.getElementById('f-date').value=today();
 document.getElementById('w-date').value=today();
-if(shUrl){document.getElementById('sync-lbl').textContent='☁ 已連線';}
+if(shUrl){document.getElementById('sync-badge').textContent='☁ 已連線';}
 renderStreak();renderSummary();
 </script>
 </body>
