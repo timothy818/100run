@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="100_Run">
+<meta name="theme-color" content="#e8571a">
+<link rel="manifest" href="manifest.json">
+<title>100_Run — 健身追蹤器</title>
+<style>
+:root {
+  --bg: #0d0d0d;
+  --bg2: #161616;
+  --bg3: #1f1f1f;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.15);
+  --text: #f0f0f0;
+  --text2: #888;
+  --text3: #555;
+  --accent: #e8571a;
+  --accent2: #ff7a40;
+  --green: #22c55e;
+  --blue: #3b82f6;
+  --red: #ef4444;
+  --purple: #a855f7;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'SF Pro Text',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow:hidden}
+a{color:var(--accent2)}
+
+/* Layout */
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+#header{padding:calc(var(--safe-top) + 12px) 16px 12px;background:var(--bg);border-bottom:0.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+#header-title{font-size:18px;font-weight:700;letter-spacing:-0.3px}
+#header-title span{color:var(--accent)}
+#header-sync{width:32px;height:32px;border-radius:50%;background:var(--bg3);border:0.5px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--text2)}
+#content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--safe-bottom) + 70px)}
+#nav{position:fixed;bottom:0;left:0;right:0;height:calc(56px + var(--safe-bottom));padding-bottom:var(--safe-bottom);background:rgba(13,13,13,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:0.5px solid var(--border);display:flex;z-index:100}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--text3);transition:color .15s;font-size:10px;border:none;background:none;padding:0}
+.nav-btn.active{color:var(--accent)}
+.nav-btn svg{width:22px;height:22px;stroke-width:1.8;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+
+/* Sections */
+.sec{display:none;padding:16px}.sec.active{display:block}
+.card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.card-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:14px}
+
+/* Metric grid */
+.mg{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.mg4{grid-template-columns:repeat(4,1fr)}
+.mc{background:var(--bg3);border-radius:var(--radius-sm);padding:12px}
+.mc-lbl{font-size:11px;color:var(--text2);margin-bottom:4px}
+.mc-val{font-size:22px;font-weight:700;line-height:1;letter-spacing:-0.5px}
+.mc-unit{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* Forms */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.form-full{grid-column:1/-1}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:12px;color:var(--text2);font-weight:500}
+.fg input,.fg select{background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius-sm);padding:10px 12px;font-size:14px;color:var(--text);-webkit-appearance:none;appearance:none;width:100%;outline:none}
+.fg input:focus,.fg select:focus{border-color:var(--accent)}
+.fg input::placeholder{color:var(--text3)}
+.fg select option{background:var(--bg3)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:11px 18px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:opacity .15s,transform .1s}
+.btn:active{transform:scale(0.97)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-secondary{background:var(--bg3);color:var(--text);border:0.5px solid var(--border2)}
+.btn-green{background:var(--green);color:#fff}
+.btn-sm{padding:7px 12px;font-size:12px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+/* Auto-calc preview */
+#ac-preview{background:var(--bg3);border-radius:var(--radius-sm);padding:12px;margin:12px 0;display:none}
+.ac-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ac-item .ac-lbl{font-size:10px;color:var(--text2);margin-bottom:3px}
+.ac-item .ac-val{font-size:15px;font-weight:700}
+
+/* Status message */
+.st-msg{font-size:12px;padding:8px 12px;border-radius:var(--radius-sm);margin-top:10px;display:none}
+.st-ok{display:block;background:rgba(34,197,94,0.15);color:var(--green);border:0.5px solid rgba(34,197,94,0.3)}
+.st-err{display:block;background:rgba(239,68,68,0.15);color:var(--red);border:0.5px solid rgba(239,68,68,0.3)}
+.st-pend{display:block;background:rgba(232,87,26,0.15);color:var(--accent2);border:0.5px solid rgba(232,87,26,0.3)}
+
+/* Streak */
+.streak-hero{text-align:center;padding:20px 0 16px}
+.streak-fire{font-size:48px;margin-bottom:8px}
+.streak-num{font-size:72px;font-weight:800;letter-spacing:-3px;color:var(--accent);line-height:1}
+.streak-sub{font-size:13px;color:var(--text2);margin-top:6px}
+.streak-run{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--border);font-size:13px}
+.streak-run:last-child{border-bottom:none}
+.s-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(59,130,246,0.2);color:var(--blue)}
+.s-badge.best{background:rgba(34,197,94,0.2);color:var(--green)}
+
+/* Heatmap */
+.hm-wrap{overflow-x:auto;padding-bottom:4px}
+.hm-inner{display:flex;gap:3px;width:max-content}
+.hm-col{display:flex;flex-direction:column;gap:3px}
+.hm-cell{width:13px;height:13px;border-radius:3px}
+.hm-month-row{display:flex;gap:3px;width:max-content;margin-bottom:3px}
+.hm-mlbl{width:13px;font-size:9px;color:var(--text3);text-align:center}
+.hm-legend{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);margin-top:10px}
+.hm-legend-cell{width:11px;height:11px;border-radius:2px}
+
+/* Log list */
+.log-list{max-height:360px;overflow-y:auto}
+.log-item{padding:12px 0;border-bottom:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start}
+.log-item:last-child{border-bottom:none}
+.log-date{font-size:13px;font-weight:700;color:var(--text)}
+.log-meta{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.7}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:6px}
+.b-run{background:rgba(59,130,246,0.2);color:#60a5fa}
+.b-cycle{background:rgba(34,197,94,0.2);color:#4ade80}
+.b-swim{background:rgba(168,85,247,0.2);color:#c084fc}
+.b-other{background:rgba(232,87,26,0.2);color:var(--accent2)}
+.del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px;flex-shrink:0}
+
+/* PR */
+.pr-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.pr-c{background:var(--bg3);border-radius:var(--radius-sm);padding:12px}
+.pr-lbl{font-size:11px;color:var(--text2);margin-bottom:3px}
+.pr-val{font-size:18px;font-weight:700;color:var(--text)}
+.pr-date{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* Chart */
+.chart-wrap{position:relative;width:100%}
+.legend{display:flex;gap:12px;font-size:11px;color:var(--text2);margin-bottom:8px;flex-wrap:wrap}
+.legend span{display:flex;align-items:center;gap:4px}
+.l-dot{width:10px;height:10px;border-radius:2px}
+
+/* Sheets tab */
+.mono{font-family:'SF Mono',Menlo,Monaco,'Courier New',monospace;font-size:11px;background:var(--bg3);padding:12px;border-radius:var(--radius-sm);line-height:1.7;color:var(--text2);max-height:200px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;border:0.5px solid var(--border)}
+.step-num{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;align-items:center;justify-content:center;flex-shrink:0;margin-right:8px}
+.step-row{display:flex;align-items:flex-start;margin-bottom:12px;font-size:13px;color:var(--text2);line-height:1.6}
+
+/* Settings */
+.settings-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:0.5px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-lbl{font-size:14px;color:var(--text)}
+.settings-sub{font-size:12px;color:var(--text2);margin-top:2px}
+
+/* Install banner */
+#install-banner{background:linear-gradient(135deg,var(--accent),#ff9a5c);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;display:none;align-items:center;justify-content:space-between;gap:12px}
+#install-banner.show{display:flex}
+.install-text{font-size:13px;font-weight:600;color:#fff}
+.install-sub{font-size:11px;color:rgba(255,255,255,0.8);margin-top:2px}
+.install-btn{background:rgba(255,255,255,0.25);color:#fff;border:none;padding:8px 14px;border-radius:var(--radius-sm);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0}
+
+/* Toast */
+#toast{position:fixed;bottom:calc(70px + var(--safe-bottom) + 12px);left:50%;transform:translateX(-50%) translateY(20px);background:rgba(30,30,30,0.95);color:var(--text);font-size:13px;padding:10px 18px;border-radius:24px;border:0.5px solid var(--border2);z-index:999;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;backdrop-filter:blur(20px)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Empty */
+.empty{text-align:center;padding:32px;color:var(--text3);font-size:13px}
+
+/* Sync indicator */
+#sync-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);margin-right:6px;display:inline-block}
+#sync-dot.ok{background:var(--green)}
+#sync-dot.err{background:var(--red)}
+#sync-dot.spin{animation:spin 1s linear infinite;background:var(--accent)}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- Header -->
+<div id="header">
+  <div style="display:flex;align-items:center;gap:8px">
+    <span id="sync-dot"></span>
+    <span id="header-title"><span>100</span>_Run</span>
+  </div>
+  <div id="header-sync" onclick="sw('sheets')" title="Sheets 設定">⚙</div>
+</div>
+
+<!-- Content -->
+<div id="content">
+
+<!-- STREAK -->
+<div id="sec-streak" class="sec active">
+  <div id="install-banner">
+    <div>
+      <div class="install-text">安裝至主畫面</div>
+      <div class="install-sub">iOS / Windows 皆可離線使用</div>
+    </div>
+    <button class="install-btn" id="install-btn" onclick="installPWA()">安裝</button>
+  </div>
+  <div class="card">
+    <div class="streak-hero">
+      <div class="streak-fire">🔥</div>
+      <div class="streak-num" id="sk-cur">0</div>
+      <div class="streak-sub">當前連續天數</div>
+    </div>
+    <div class="mg mg4" style="margin-bottom:0">
+      <div class="mc"><div class="mc-lbl">最長連續</div><div class="mc-val" id="sk-best" style="color:var(--green)">0</div><div class="mc-unit">天</div></div>
+      <div class="mc"><div class="mc-lbl">總訓練</div><div class="mc-val" id="sk-total">0</div><div class="mc-unit">天</div></div>
+      <div class="mc"><div class="mc-lbl">本月</div><div class="mc-val" id="sk-month">0</div><div class="mc-unit">天</div></div>
+      <div class="mc"><div class="mc-lbl">完成率</div><div class="mc-val" id="sk-rate">0</div><div class="mc-unit">%</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">訓練熱力圖（26 週）</div>
+    <div class="hm-wrap">
+      <div id="hm-months" class="hm-month-row"></div>
+      <div id="hm-grid" class="hm-inner"></div>
+    </div>
+    <div class="hm-legend">
+      <div class="hm-legend-cell" style="background:#1f1f1f;border:0.5px solid #333"></div>無
+      <div class="hm-legend-cell" style="background:#7c3519"></div>1次
+      <div class="hm-legend-cell" style="background:#b85520"></div>2次
+      <div class="hm-legend-cell" style="background:#e8571a"></div>3次+
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">連續段落</div>
+    <div id="sk-runs"><div class="empty">尚無記錄</div></div>
+  </div>
+</div>
+
+<!-- LOG -->
+<div id="sec-log" class="sec">
+  <div class="mg mg4">
+    <div class="mc"><div class="mc-lbl">本週次數</div><div class="mc-val" id="sm-cnt">0</div><div class="mc-unit">次</div></div>
+    <div class="mc"><div class="mc-lbl">距離</div><div class="mc-val" id="sm-dst">0.0</div><div class="mc-unit">km</div></div>
+    <div class="mc"><div class="mc-lbl">時間</div><div class="mc-val" id="sm-tm">0:00</div><div class="mc-unit">h:mm</div></div>
+    <div class="mc"><div class="mc-lbl">熱量</div><div class="mc-val" id="sm-cal">0</div><div class="mc-unit">kcal</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">新增訓練</div>
+    <div class="form-grid">
+      <div class="fg"><label>日期</label><input type="date" id="f-date"></div>
+      <div class="fg"><label>類型</label>
+        <select id="f-type">
+          <option value="run">🏃 跑步</option>
+          <option value="cycle">🚴 騎車</option>
+          <option value="swim">🏊 游泳</option>
+          <option value="other">⚡ 其他</option>
+        </select>
+      </div>
+      <div class="fg"><label>距離 (km)</label><input type="number" id="f-dst" min="0" step="0.01" placeholder="0.00"></div>
+      <div class="fg"><label>時間 hh:mm:ss.ms</label><input type="text" id="f-time" placeholder="00:45:30.500" inputmode="numeric"></div>
+      <div class="fg"><label>平均心率 (bpm)</label><input type="number" id="f-hra" min="0" placeholder="—" inputmode="numeric"></div>
+      <div class="fg"><label>最大心率 (bpm)</label><input type="number" id="f-hrm" min="0" placeholder="—" inputmode="numeric"></div>
+      <div class="fg"><label>平均功率 (W)</label><input type="number" id="f-pwa" min="0" placeholder="—" inputmode="numeric"></div>
+      <div class="fg"><label>最大功率 (W)</label><input type="number" id="f-pwm" min="0" placeholder="—" inputmode="numeric"></div>
+      <div class="fg"><label>熱量 (kcal)</label><input type="number" id="f-cal" min="0" placeholder="—" inputmode="numeric"></div>
+      <div class="fg"><label>心率基準 (bpm)</label><input type="number" id="f-hrb" min="100" max="250" placeholder="190" inputmode="numeric"></div>
+      <div class="fg form-full"><label>備註</label><input type="text" id="f-note" placeholder="今天狀況..."></div>
+    </div>
+    <!-- Auto calc preview -->
+    <div id="ac-preview">
+      <div class="ac-grid">
+        <div class="ac-item"><div class="ac-lbl">配速</div><div class="ac-val" id="ac-p" style="color:var(--accent)">—</div><div style="font-size:10px;color:var(--text3)">min/km</div></div>
+        <div class="ac-item"><div class="ac-lbl">心率區間</div><div class="ac-val" id="ac-z" style="color:var(--blue)">—</div></div>
+        <div class="ac-item"><div class="ac-lbl">有氧</div><div class="ac-val" id="ac-a" style="color:var(--green)">—</div></div>
+        <div class="ac-item"><div class="ac-lbl">無氧</div><div class="ac-val" id="ac-n" style="color:var(--red)">—</div></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="addEntry()">💾 儲存記錄</button>
+    </div>
+    <div id="log-st" class="st-msg"></div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div id="sec-history" class="sec">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div class="card-title" style="margin-bottom:0">訓練記錄</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary btn-sm" onclick="exportCSV()">CSV</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportXLSX()">Excel</button>
+      </div>
+    </div>
+    <div class="log-list" id="log-list"><div class="empty">尚無記錄</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">個人最佳 PR</div>
+    <div class="pr-grid" id="pr-grid"><div class="empty">尚無PR</div></div>
+  </div>
+</div>
+
+<!-- CHART -->
+<div id="sec-chart" class="sec">
+  <div class="card"><div class="card-title">距離趨勢 (km)</div><div class="chart-wrap" style="height:180px"><canvas id="c-dist" role="img" aria-label="距離趨勢圖"></canvas></div></div>
+  <div class="card"><div class="card-title">配速趨勢 (min/km — 越低越快)</div><div class="chart-wrap" style="height:180px"><canvas id="c-pace" role="img" aria-label="配速趨勢圖"></canvas></div></div>
+  <div class="card">
+    <div class="card-title">心率趨勢 (bpm)</div>
+    <div class="legend"><span><span class="l-dot" style="background:#3b82f6"></span>平均</span><span><span class="l-dot" style="background:#ef4444"></span>最大</span></div>
+    <div class="chart-wrap" style="height:180px"><canvas id="c-hr" role="img" aria-label="心率趨勢圖"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">功率趨勢 (W)</div>
+    <div class="legend"><span><span class="l-dot" style="background:#a855f7"></span>平均</span><span><span class="l-dot" style="background:#ec4899"></span>最大</span></div>
+    <div class="chart-wrap" style="height:180px"><canvas id="c-pw" role="img" aria-label="功率趨勢圖"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">有氧 / 無氧 時間 (min)</div>
+    <div class="legend"><span><span class="l-dot" style="background:#22c55e"></span>有氧</span><span><span class="l-dot" style="background:#ef4444"></span>無氧</span></div>
+    <div class="chart-wrap" style="height:180px"><canvas id="c-zone" role="img" aria-label="有氧無氧分佈圖"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">體重趨勢 (kg)</div>
+    <div class="chart-wrap" style="height:180px"><canvas id="c-wt" role="img" aria-label="體重趨勢圖"></canvas></div>
+  </div>
+</div>
+
+<!-- WEIGHT -->
+<div id="sec-weight" class="sec">
+  <div class="mg mg4">
+    <div class="mc"><div class="mc-lbl">目前</div><div class="mc-val" id="w-cur">—</div><div class="mc-unit">kg</div></div>
+    <div class="mc"><div class="mc-lbl">最低</div><div class="mc-val" id="w-min" style="color:var(--green)">—</div><div class="mc-unit">kg</div></div>
+    <div class="mc"><div class="mc-lbl">最高</div><div class="mc-val" id="w-max">—</div><div class="mc-unit">kg</div></div>
+    <div class="mc"><div class="mc-lbl">總變化</div><div class="mc-val" id="w-delta">—</div><div class="mc-unit">kg</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">記錄體重</div>
+    <div class="form-grid">
+      <div class="fg"><label>日期</label><input type="date" id="w-date"></div>
+      <div class="fg"><label>體重 (kg)</label><input type="number" id="w-val" min="0" step="0.1" placeholder="kg" inputmode="decimal"></div>
+    </div>
+    <button class="btn btn-primary" onclick="addWeight()">💾 儲存</button>
+    <div id="w-st" class="st-msg"></div>
+  </div>
+</div>
+
+<!-- SHEETS -->
+<div id="sec-sheets" class="sec">
+  <div class="card">
+    <div class="card-title">Google Sheets 同步</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+      <span id="conn-dot" style="width:10px;height:10px;border-radius:50%;background:var(--text3);flex-shrink:0"></span>
+      <span id="conn-lbl" style="font-size:13px;color:var(--text2)">未設定</span>
+    </div>
+    <div class="fg" style="margin-bottom:12px">
+      <label>Apps Script Webhook URL</label>
+      <input type="url" id="sh-url" placeholder="https://script.google.com/macros/s/xxxxx/exec" style="font-size:12px">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary btn-sm" onclick="saveCfg()">儲存</button>
+      <button class="btn btn-green btn-sm" onclick="syncAll()">全部同步</button>
+      <button class="btn btn-secondary btn-sm" onclick="testConn()">測試連線</button>
+    </div>
+    <div id="sh-st" class="st-msg"></div>
+    <div style="margin-top:14px;font-size:12px;color:var(--text2)" id="sh-stats">尚未同步</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">安裝說明</div>
+    <div class="step-row"><span class="step-num">1</span>打開「100_Run」Google 試算表 → 擴充功能 → Apps Script</div>
+    <div class="step-row"><span class="step-num">2</span>全選貼入程式碼（下方）→ Ctrl+S 儲存</div>
+    <div class="step-row"><span class="step-num">3</span>部署 → 新增部署 → 網頁應用程式 → 執行者：我，存取：所有人</div>
+    <div class="step-row"><span class="step-num">4</span>複製 URL 貼入上方欄位</div>
+    <div class="mono" id="script-display"></div>
+    <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="copyScript()">📋 複製程式碼</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">PWA 安裝</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.8">
+      <b style="color:var(--text)">iOS Safari：</b>點底部分享按鈕 → 加入主畫面<br>
+      <b style="color:var(--text)">Windows Chrome：</b>網址列右側安裝圖示 → 安裝<br>
+      <b style="color:var(--text)">Android Chrome：</b>選單 → 新增至主畫面
+    </div>
+    <button class="btn btn-primary btn-sm" style="margin-top:12px" id="install-btn2" onclick="installPWA()" style="display:none">安裝應用程式</button>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<!-- Nav -->
+<nav id="nav">
+  <button class="nav-btn active" onclick="sw('streak')" id="nav-streak">
+    <svg viewBox="0 0 24 24"><path d="M12 2c0 6-6 8-6 14a6 6 0 0012 0c0-6-6-8-6-14z"/></svg>
+    連續
+  </button>
+  <button class="nav-btn" onclick="sw('log')" id="nav-log">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    記錄
+  </button>
+  <button class="nav-btn" onclick="sw('history')" id="nav-history">
+    <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+    歷史
+  </button>
+  <button class="nav-btn" onclick="sw('chart')" id="nav-chart">
+    <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    圖表
+  </button>
+  <button class="nav-btn" onclick="sw('weight')" id="nav-weight">
+    <svg viewBox="0 0 24 24"><path d="M3 6l9-4 9 4v6c0 5.55-3.84 10.74-9 12-5.16-1.26-9-6.45-9-12V6z"/></svg>
+    體重
+  </button>
+</nav>
+
+</div><!-- /app -->
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ── State ──────────────────────────────────────────────
+let logs=[], weights=[], charts={}, shUrl='', deferredPrompt=null;
+const DB = {
+  save(){ localStorage.setItem('r100_logs',JSON.stringify(logs)); localStorage.setItem('r100_wts',JSON.stringify(weights)); },
+  load(){ try{logs=JSON.parse(localStorage.getItem('r100_logs')||'[]');}catch(e){logs=[];} try{weights=JSON.parse(localStorage.getItem('r100_wts')||'[]');}catch(e){weights=[];} }
+};
+DB.load();
+try{shUrl=localStorage.getItem('r100_url')||'';}catch(e){}
+
+// ── Utils ──────────────────────────────────────────────
+function today(){ return new Date().toISOString().split('T')[0]; }
+function dayDiff(a,b){ return Math.round((new Date(b)-new Date(a))/86400000); }
+function toast(msg,dur=2500){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),dur); }
+function showSt(id,type,msg){ const el=document.getElementById(id); el.className='st-msg st-'+type; el.textContent=msg; if(type==='ok')setTimeout(()=>{el.className='st-msg';},3000); }
+function setSyncDot(state){ const d=document.getElementById('sync-dot'); d.className=state; }
+
+function parseTime(s){
+  if(!s)return 0;
+  const m=s.match(/^(\d{1,2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?$/);
+  if(!m)return 0;
+  return parseInt(m[1])*3600+parseInt(m[2])*60+parseInt(m[3])+(m[4]?parseInt(m[4].padEnd(3,'0'))/1000:0);
+}
+function fmtTime(s){
+  if(!s)return '—';
+  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=Math.floor(s%60),ms=Math.round((s%1)*1000);
+  return `${h}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}.${String(ms).padStart(3,'0')}`;
+}
+function fmtHM(s){ return `${Math.floor(s/3600)}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}`; }
+function calcPace(d,s){ if(!d||!s)return null; const spk=s/d; return{min:Math.floor(spk/60),sec:Math.round(spk%60),total:spk}; }
+function fmtPace(p){ return p?`${p.min}:${String(p.sec).padStart(2,'0')}`:'—'; }
+function calcZone(hr,base){
+  if(!hr||!base)return null;
+  const p=hr/base;
+  if(p>=0.9)return{name:'Z5 最大',aero:10,anaero:90};
+  if(p>=0.8)return{name:'Z4 閾值',aero:35,anaero:65};
+  if(p>=0.7)return{name:'Z3 有氧',aero:65,anaero:35};
+  if(p>=0.6)return{name:'Z2 基礎',aero:85,anaero:15};
+  return{name:'Z1 恢復',aero:95,anaero:5};
+}
+
+// ── PWA ───────────────────────────────────────────────
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+window.addEventListener('beforeinstallprompt', e=>{
+  e.preventDefault(); deferredPrompt=e;
+  document.getElementById('install-banner').classList.add('show');
+  document.getElementById('install-btn2').style.display='inline-flex';
+});
+window.addEventListener('appinstalled', ()=>{
+  document.getElementById('install-banner').classList.remove('show');
+  toast('已安裝至主畫面 ✓');
+});
+function installPWA(){
+  if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt.userChoice.then(()=>{deferredPrompt=null;}); }
+  else { toast('請使用瀏覽器選單手動安裝'); }
+}
+
+// ── Sheets Sync ────────────────────────────────────────
+async function getReq(params){
+  if(!shUrl)return false;
+  try{
+    await fetch(shUrl+'?'+new URLSearchParams(params).toString(),{method:'GET',mode:'no-cors'});
+    return true;
+  }catch(e){return false;}
+}
+function saveCfg(){
+  shUrl=document.getElementById('sh-url').value.trim();
+  localStorage.setItem('r100_url',shUrl);
+  const dot=document.getElementById('conn-dot');
+  const lbl=document.getElementById('conn-lbl');
+  if(shUrl){dot.style.background='var(--green)';lbl.textContent='已設定';}
+  else{dot.style.background='var(--text3)';lbl.textContent='未設定';}
+  showSt('sh-st','ok','URL 已儲存 ✓');
+}
+async function testConn(){
+  saveCfg(); if(!shUrl){toast('請先輸入 URL');return;}
+  showSt('sh-st','pend','測試中...');setSyncDot('spin');
+  try{
+    const r=await fetch(shUrl+'?type=test',{mode:'cors'});
+    const j=await r.json();
+    showSt('sh-st','ok','連線正常 ✓');setSyncDot('ok');
+  }catch(e){
+    showSt('sh-st','err','瀏覽器 CORS 限制（正常現象）— 直接點「全部同步」測試寫入');setSyncDot('err');
+  }
+}
+async function syncAll(){
+  saveCfg(); if(!shUrl){toast('請先輸入 URL');return;}
+  showSt('sh-st','pend','同步中...');setSyncDot('spin');
+  const workouts=logs.map(e=>({
+    id:e.id,date:e.date,type:e.type,dist:e.dist,sec:e.sec,timeFmt:fmtTime(e.sec),
+    pace:e.pace?fmtPace(e.pace):'',hrAvg:e.hrAvg,hrMax:e.hrMax,pwAvg:e.pwAvg,pwMax:e.pwMax,
+    cal:e.cal,aeroMin:e.aeroMin||0,anaeroMin:e.anaeroMin||0,zone:e.zone?e.zone.name:'',note:e.note
+  }));
+  const payload=encodeURIComponent(JSON.stringify({workouts,weights}));
+  try{
+    await fetch(shUrl+'?type=sync_all&payload='+payload,{method:'GET',mode:'no-cors'});
+    showSt('sh-st','ok','同步指令已送出 ✓ 請確認試算表');setSyncDot('ok');
+    document.getElementById('sh-stats').textContent=`上次同步：${new Date().toLocaleString('zh-TW')} | 訓練 ${logs.length} 筆 / 體重 ${weights.length} 筆`;
+  }catch(e){
+    showSt('sh-st','err','同步失敗：'+e.message);setSyncDot('err');
+  }
+}
+
+// ── Log Entry ──────────────────────────────────────────
+['f-dst','f-time','f-hra','f-hrb'].forEach(id=>{ const el=document.getElementById(id); if(el)el.addEventListener('input',liveCalc); });
+function liveCalc(){
+  const d=parseFloat(document.getElementById('f-dst').value)||0;
+  const s=parseTime(document.getElementById('f-time').value);
+  const hr=parseFloat(document.getElementById('f-hra').value)||0;
+  const base=parseFloat(document.getElementById('f-hrb').value)||190;
+  const box=document.getElementById('ac-preview');
+  if(!d&&!s&&!hr){box.style.display='none';return;}
+  box.style.display='block';
+  document.getElementById('ac-p').textContent=fmtPace(calcPace(d,s));
+  const z=calcZone(hr,base);
+  document.getElementById('ac-z').textContent=z?z.name:'—';
+  document.getElementById('ac-a').textContent=z?z.aero+'%':'—';
+  document.getElementById('ac-n').textContent=z?z.anaero+'%':'—';
+}
+
+function addEntry(){
+  const dist=parseFloat(document.getElementById('f-dst').value)||0;
+  const sec=parseTime(document.getElementById('f-time').value);
+  const hrAvg=parseFloat(document.getElementById('f-hra').value)||0;
+  const hrMax=parseFloat(document.getElementById('f-hrm').value)||0;
+  const pwAvg=parseFloat(document.getElementById('f-pwa').value)||0;
+  const pwMax=parseFloat(document.getElementById('f-pwm').value)||0;
+  const base=parseFloat(document.getElementById('f-hrb').value)||190;
+  const z=calcZone(hrAvg,base);
+  const e={
+    id:Date.now(),date:document.getElementById('f-date').value,
+    type:document.getElementById('f-type').value,
+    dist,sec,hrAvg,hrMax,pwAvg,pwMax,
+    cal:parseFloat(document.getElementById('f-cal').value)||0,
+    note:document.getElementById('f-note').value,
+    zone:z,pace:calcPace(dist,sec),
+    aeroMin:z&&sec?Math.round(sec/60*z.aero/100):0,
+    anaeroMin:z&&sec?Math.round(sec/60*z.anaero/100):0
+  };
+  if(!e.date){toast('請選擇日期');return;}
+  logs.push(e);logs.sort((a,b)=>a.date.localeCompare(b.date));
+  DB.save();renderSummary();renderStreak();
+  if(shUrl){
+    showSt('log-st','pend','同步至 Sheets...');setSyncDot('spin');
+    getReq({type:'workout',type2:e.type,id:e.id,date:e.date,dist:e.dist,sec:e.sec,
+      timeFmt:fmtTime(e.sec),pace:e.pace?fmtPace(e.pace):'',hrAvg:e.hrAvg,hrMax:e.hrMax,
+      pwAvg:e.pwAvg,pwMax:e.pwMax,cal:e.cal,aeroMin:e.aeroMin,anaeroMin:e.anaeroMin,
+      zone:e.zone?e.zone.name:'',note:e.note
+    }).then(ok=>{showSt('log-st',ok?'ok':'err',ok?'已同步 ✓':'已存本機，下次全部同步');setSyncDot(ok?'ok':'err');});
+  }
+  ['f-dst','f-time','f-hra','f-hrm','f-pwa','f-pwm','f-cal','f-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-date').value=today();
+  document.getElementById('ac-preview').style.display='none';
+  toast('記錄已儲存 ✓');
+}
+
+function delEntry(id){
+  if(!confirm('確定刪除？'))return;
+  logs=logs.filter(l=>l.id!==id);DB.save();renderHistory();renderSummary();renderStreak();
+}
+
+// ── Streak ─────────────────────────────────────────────
+function getStreaks(){
+  const dates=[...new Set(logs.map(l=>l.date))].sort();
+  if(!dates.length)return{cur:0,best:0,runs:[]};
+  const runs=[];let start=dates[0],len=1;
+  for(let i=1;i<dates.length;i++){
+    if(dayDiff(dates[i-1],dates[i])===1)len++;
+    else{runs.push({start,end:dates[i-1],days:len});start=dates[i];len=1;}
+  }
+  runs.push({start,end:dates[dates.length-1],days:len});
+  const best=Math.max(...runs.map(r=>r.days));
+  const last=dates[dates.length-1];
+  const cur=dayDiff(last,today())<=1?runs[runs.length-1].days:0;
+  return{cur,best,runs:[...runs].reverse()};
+}
+
+function renderStreak(){
+  const{cur,best,runs}=getStreaks();
+  const dates=[...new Set(logs.map(l=>l.date))];
+  document.getElementById('sk-cur').textContent=cur;
+  document.getElementById('sk-best').textContent=best;
+  document.getElementById('sk-total').textContent=dates.length;
+  const m0=new Date();m0.setDate(1);
+  document.getElementById('sk-month').textContent=dates.filter(d=>d>=m0.toISOString().split('T')[0]).length;
+  const s182=new Date();s182.setDate(s182.getDate()-182);
+  const allD=[];for(let d=new Date(s182);d<=new Date();d.setDate(d.getDate()+1))allD.push(d.toISOString().split('T')[0]);
+  document.getElementById('sk-rate').textContent=allD.length?Math.round(dates.filter(d=>d>=s182.toISOString().split('T')[0]).length/allD.length*100):0;
+  renderHeatmap(dates);
+  const el=document.getElementById('sk-runs');
+  if(!runs.length){el.innerHTML='<div class="empty">尚無連續記錄</div>';return;}
+  const bDays=Math.max(...runs.map(r=>r.days));
+  el.innerHTML=runs.map(r=>`<div class="streak-run">
+    <span class="s-badge${r.days===bDays?' best':''}">${r.days}天</span>
+    <span style="color:var(--text);font-weight:600">${r.start}</span>
+    <span style="color:var(--text2)">→</span>
+    <span style="color:var(--text)">${r.end}</span>
+    ${r.days===bDays?'<span style="font-size:11px;color:var(--green)">最長 🏆</span>':''}
+  </div>`).join('');
+}
+
+function renderHeatmap(dates){
+  const cntMap={};logs.forEach(l=>{cntMap[l.date]=(cntMap[l.date]||0)+1;});
+  const weeks=26,cells=weeks*7;
+  const startD=new Date();startD.setDate(startD.getDate()-(cells-1));
+  const allDays=[];for(let d=new Date(startD);d<=new Date();d.setDate(d.getDate()+1))allDays.push(d.toISOString().split('T')[0]);
+  const cols=Array.from({length:weeks},()=>[]);
+  allDays.forEach((d,i)=>cols[Math.floor(i/7)].push(d));
+  const mEl=document.getElementById('hm-months'),gEl=document.getElementById('hm-grid');
+  mEl.innerHTML='';gEl.innerHTML='';
+  let lastM='';
+  cols.forEach(col=>{
+    const m=col[0]?col[0].slice(5,7):'';
+    const lbl=document.createElement('div');lbl.className='hm-mlbl';
+    lbl.textContent=(m!==lastM)?(['','1','2','3','4','5','6','7','8','9','10','11','12'][parseInt(m)]||''):'';
+    if(m!==lastM)lastM=m;
+    mEl.appendChild(lbl);
+    const colDiv=document.createElement('div');colDiv.className='hm-col';
+    col.forEach(d=>{
+      const cell=document.createElement('div');cell.className='hm-cell';
+      const c=cntMap[d]||0;
+      cell.style.background=c===0?'#1f1f1f':c===1?'#7c3519':c===2?'#b85520':'#e8571a';
+      cell.title=d+(c?` (${c}次)`:'');
+      colDiv.appendChild(cell);
+    });
+    gEl.appendChild(colDiv);
+  });
+}
+
+// ── Summary ────────────────────────────────────────────
+function renderSummary(){
+  const now=new Date(),ws=new Date(now);ws.setDate(now.getDate()-now.getDay()+1);
+  const wk=logs.filter(l=>l.date>=ws.toISOString().split('T')[0]);
+  document.getElementById('sm-cnt').textContent=wk.length;
+  document.getElementById('sm-dst').textContent=wk.reduce((s,l)=>s+l.dist,0).toFixed(1);
+  document.getElementById('sm-tm').textContent=fmtHM(wk.reduce((s,l)=>s+l.sec,0));
+  document.getElementById('sm-cal').textContent=Math.round(wk.reduce((s,l)=>s+l.cal,0));
+}
+
+// ── History ────────────────────────────────────────────
+const tLbl={run:'跑步',cycle:'騎車',swim:'游泳',other:'其他'};
+const tBdg={run:'b-run',cycle:'b-cycle',swim:'b-swim',other:'b-other'};
+
+function renderHistory(){
+  const el=document.getElementById('log-list');
+  if(!logs.length){el.innerHTML='<div class="empty">尚無記錄</div>';renderPR();return;}
+  el.innerHTML=[...logs].reverse().map(l=>{
+    const p=l.pace?fmtPace(l.pace)+' min/km':'';
+    const z=l.zone?`有${l.aeroMin}min / 無${l.anaeroMin}min [${l.zone.name}]`:'';
+    const hr=l.hrAvg?`HR ${l.hrAvg}/${l.hrMax||'—'} bpm`:'';
+    const pw=l.pwAvg?`PWR ${l.pwAvg}/${l.pwMax||'—'} W`:'';
+    return`<div class="log-item">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;flex-wrap:wrap">
+          <span class="log-date">${l.date}</span>
+          <span class="badge ${tBdg[l.type]}">${tLbl[l.type]}</span>
+        </div>
+        <div class="log-meta">
+          ${l.dist?l.dist+'km ':''} ${l.sec?fmtTime(l.sec)+' ':''} ${p}<br>
+          ${hr}${hr&&pw?' &nbsp;·&nbsp; ':''}${pw}<br>
+          ${z}${l.note?'<br>'+l.note:''}
+        </div>
+      </div>
+      <button class="del-btn" onclick="delEntry(${l.id})" aria-label="刪除">🗑</button>
+    </div>`;
+  }).join('');
+  renderPR();
+}
+
+function renderPR(){
+  const el=document.getElementById('pr-grid');
+  if(!logs.length){el.innerHTML='<div class="empty">尚無PR</div>';return;}
+  const items=[];
+  ['run','cycle','swim','other'].forEach(t=>{
+    const f=logs.filter(l=>l.type===t&&l.dist>0);
+    if(f.length){const b=f.reduce((a,c)=>a.dist>c.dist?a:c);items.push({lbl:tLbl[t]+' 最遠',val:b.dist+'km',date:b.date});}
+    const fp=logs.filter(l=>l.type===t&&l.pace&&l.dist>=1);
+    if(fp.length){const b=fp.reduce((a,c)=>a.pace.total<c.pace.total?a:c);items.push({lbl:tLbl[t]+' 最快配速',val:fmtPace(b.pace)+'/km',date:b.date});}
+  });
+  const hm=logs.filter(l=>l.hrMax>0);if(hm.length){const b=hm.reduce((a,c)=>a.hrMax>c.hrMax?a:c);items.push({lbl:'最高心率',val:b.hrMax+' bpm',date:b.date});}
+  const pm=logs.filter(l=>l.pwMax>0);if(pm.length){const b=pm.reduce((a,c)=>a.pwMax>c.pwMax?a:c);items.push({lbl:'最高功率',val:b.pwMax+' W',date:b.date});}
+  el.innerHTML=items.map(i=>`<div class="pr-c"><div class="pr-lbl">${i.lbl}</div><div class="pr-val">${i.val}</div><div class="pr-date">${i.date}</div></div>`).join('')||'<div class="empty">尚無PR</div>';
+}
+
+// ── Export ─────────────────────────────────────────────
+function exportCSV(){
+  if(!logs.length){toast('尚無資料');return;}
+  const header=['ID','日期','類型','距離(km)','時間','配速(min/km)','平均心率','最大心率','平均功率','最大功率','熱量','有氧(min)','無氧(min)','心率區間','備註'];
+  const rows=logs.map(l=>[l.id,l.date,tLbl[l.type]||l.type,l.dist,fmtTime(l.sec),l.pace?fmtPace(l.pace):'',l.hrAvg,l.hrMax,l.pwAvg,l.pwMax,l.cal,l.aeroMin||0,l.anaeroMin||0,l.zone?l.zone.name:'',l.note]);
+  const csv=[header,...rows].map(r=>r.map(v=>'"'+(String(v||'').replace(/"/g,'""'))+'"').join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.download=`100Run_${today()}.csv`;a.click();URL.revokeObjectURL(url);
+  toast('CSV 已下載');
+}
+
+function exportXLSX(){
+  if(!window.XLSX){toast('XLSX 函式庫載入中...');return;}
+  if(!logs.length&&!weights.length){toast('尚無資料');return;}
+  const wb=XLSX.utils.book_new();
+  const wHeader=['ID','日期','類型','距離(km)','時間(秒)','時間格式','配速(min/km)','平均心率','最大心率','平均功率','最大功率','熱量','有氧(min)','無氧(min)','心率區間','備註'];
+  const wData=logs.map(l=>[l.id,l.date,tLbl[l.type]||l.type,l.dist,l.sec,fmtTime(l.sec),l.pace?fmtPace(l.pace):'',l.hrAvg,l.hrMax,l.pwAvg,l.pwMax,l.cal,l.aeroMin||0,l.anaeroMin||0,l.zone?l.zone.name:'',l.note]);
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([wHeader,...wData]),'Workouts');
+  if(weights.length) XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['日期','體重(kg)'],...weights.map(w=>[w.date,w.val])]),'Weight');
+  XLSX.writeFile(wb,`100Run_${today()}.xlsx`);
+  toast('Excel 已下載');
+}
+
+// ── Charts ─────────────────────────────────────────────
+function mkChart(id,type,labels,datasets,opts={}){
+  if(charts[id])charts[id].destroy();
+  charts[id]=new Chart(document.getElementById(id),{type,data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},elements:{point:{radius:3}},animation:{duration:400},...opts}});
+}
+const xTicks={font:{size:10},color:'#666',maxRotation:45,autoSkip:true,maxTicksLimit:10};
+const yTicks={font:{size:10},color:'#666'};
+const gridCfg={color:'rgba(255,255,255,0.05)'};
+
+function renderCharts(){
+  const s=[...logs].sort((a,b)=>a.date.localeCompare(b.date));
+  const lbl=s.map(l=>l.date.slice(5));
+  const base={tension:0.4,fill:true,spanGaps:true};
+  mkChart('c-dist','line',lbl,[{...base,data:s.map(l=>+l.dist.toFixed(2)),borderColor:'#e8571a',backgroundColor:'rgba(232,87,26,0.1)',borderWidth:2}],{scales:{y:{beginAtZero:true,ticks:yTicks,grid:gridCfg},x:{ticks:xTicks,grid:gridCfg}}});
+  mkChart('c-pace','line',lbl,[{...base,data:s.map(l=>l.pace?+(l.pace.total/60).toFixed(2):null),borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.1)',borderWidth:2}],{scales:{y:{reverse:true,ticks:{...yTicks,callback:v=>{const m=Math.floor(v),s=Math.round((v-m)*60);return m+':'+String(s).padStart(2,'0')}},grid:gridCfg},x:{ticks:xTicks,grid:gridCfg}}});
+  mkChart('c-hr','line',lbl,[
+    {...base,data:s.map(l=>l.hrAvg||null),borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.08)',borderWidth:2},
+    {...base,data:s.map(l=>l.hrMax||null),borderColor:'#ef4444',fill:false,borderWidth:2,borderDash:[4,3]}
+  ],{scales:{y:{beginAtZero:false,ticks:yTicks,grid:gridCfg},x:{ticks:xTicks,grid:gridCfg}}});
+  mkChart('c-pw','line',lbl,[
+    {...base,data:s.map(l=>l.pwAvg||null),borderColor:'#a855f7',backgroundColor:'rgba(168,85,247,0.08)',borderWidth:2},
+    {...base,data:s.map(l=>l.pwMax||null),borderColor:'#ec4899',fill:false,borderWidth:2,borderDash:[4,3]}
+  ],{scales:{y:{beginAtZero:true,ticks:yTicks,grid:gridCfg},x:{ticks:xTicks,grid:gridCfg}}});
+  mkChart('c-zone','bar',lbl,[
+    {label:'有氧',data:s.map(l=>l.aeroMin||0),backgroundColor:'rgba(34,197,94,0.8)'},
+    {label:'無氧',data:s.map(l=>l.anaeroMin||0),backgroundColor:'rgba(239,68,68,0.8)'}
+  ],{scales:{x:{stacked:true,ticks:xTicks,grid:gridCfg},y:{stacked:true,beginAtZero:true,ticks:yTicks,grid:gridCfg}}});
+  if(weights.length){
+    const wl=weights.map(w=>w.date.slice(5)),wd=weights.map(w=>w.val);
+    mkChart('c-wt','line',wl,[{...base,data:wd,borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,0.1)',borderWidth:2}],{scales:{y:{ticks:yTicks,grid:gridCfg},x:{ticks:xTicks,grid:gridCfg}}});
+  }
+}
+
+// ── Weight ─────────────────────────────────────────────
+function addWeight(){
+  const d=document.getElementById('w-date').value,v=parseFloat(document.getElementById('w-val').value);
+  if(!d||!v){toast('請輸入日期與體重');return;}
+  weights=weights.filter(w=>w.date!==d);weights.push({date:d,val:v});weights.sort((a,b)=>a.date.localeCompare(b.date));
+  DB.save();renderWeight();
+  if(shUrl)getReq({type:'weight',date:d,val:v});
+  document.getElementById('w-val').value='';document.getElementById('w-date').value=today();
+  toast('體重已記錄 ✓');showSt('w-st','ok','儲存成功');
+}
+function renderWeight(){
+  if(!weights.length){['w-cur','w-min','w-max','w-delta'].forEach(id=>document.getElementById(id).textContent='—');return;}
+  const v=weights.map(w=>w.val);
+  document.getElementById('w-cur').textContent=v[v.length-1].toFixed(1);
+  document.getElementById('w-min').textContent=Math.min(...v).toFixed(1);
+  document.getElementById('w-max').textContent=Math.max(...v).toFixed(1);
+  const d=v[v.length-1]-v[0];
+  document.getElementById('w-delta').textContent=(d>=0?'+':'')+d.toFixed(1);
+  document.getElementById('w-delta').style.color=d<=0?'var(--green)':'var(--red)';
+}
+
+// ── Nav ────────────────────────────────────────────────
+const secs=['streak','log','history','chart','weight','sheets'];
+function sw(t){
+  secs.forEach(s=>{
+    document.getElementById('sec-'+s).classList.toggle('active',s===t);
+    const nb=document.getElementById('nav-'+s);if(nb)nb.classList.toggle('active',s===t);
+  });
+  if(t==='chart')renderCharts();
+  if(t==='history')renderHistory();
+  if(t==='weight')renderWeight();
+  if(t==='log')renderSummary();
+  if(t==='streak')renderStreak();
+  if(t==='sheets'&&shUrl){
+    document.getElementById('sh-url').value=shUrl;
+    document.getElementById('conn-dot').style.background='var(--green)';
+    document.getElementById('conn-lbl').textContent='已設定';
+  }
+}
+
+// ── Apps Script code display ───────────────────────────
+const SCRIPT=`function doGet(e) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const p = e.parameter, type = p.type;
+
+    if (type === 'workout') {
+      let sh = ss.getSheetByName('Workouts');
+      if (!sh) { sh = ss.insertSheet('Workouts');
+        sh.appendRow(['ID','日期','類型','距離(km)','時間(s)','時間格式',
+          '配速','平均心率','最大心率','平均功率','最大功率',
+          '熱量','有氧(min)','無氧(min)','心率區間','備註']); }
+      sh.appendRow([p.id,p.date,p.type2,p.dist,p.sec,p.timeFmt,p.pace,
+        p.hrAvg,p.hrMax,p.pwAvg,p.pwMax,p.cal,p.aeroMin,p.anaeroMin,p.zone,p.note]);
+    }
+    if (type === 'weight') {
+      let sh = ss.getSheetByName('Weight');
+      if (!sh) { sh = ss.insertSheet('Weight'); sh.appendRow(['日期','體重(kg)']); }
+      sh.appendRow([p.date, p.val]);
+    }
+    if (type === 'sync_all') {
+      const data = JSON.parse(decodeURIComponent(p.payload));
+      let sh = ss.getSheetByName('Workouts');
+      if (!sh) { sh = ss.insertSheet('Workouts');
+        sh.appendRow(['ID','日期','類型','距離(km)','時間(s)','時間格式',
+          '配速','平均心率','最大心率','平均功率','最大功率',
+          '熱量','有氧(min)','無氧(min)','心率區間','備註']); }
+      else { const l=sh.getLastRow(); if(l>1) sh.deleteRows(2,l-1); }
+      data.workouts.forEach(r => sh.appendRow([r.id,r.date,r.type,r.dist,
+        r.sec,r.timeFmt,r.pace,r.hrAvg,r.hrMax,r.pwAvg,r.pwMax,r.cal,
+        r.aeroMin,r.anaeroMin,r.zone,r.note]));
+      let sw = ss.getSheetByName('Weight');
+      if (!sw) { sw = ss.insertSheet('Weight'); sw.appendRow(['日期','體重(kg)']); }
+      else { const l=sw.getLastRow(); if(l>1) sw.deleteRows(2,l-1); }
+      data.weights.forEach(w => sw.appendRow([w.date, w.val]));
+    }
+    return ContentService.createTextOutput(JSON.stringify({ok:true}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({ok:false,error:err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}`;
+document.getElementById('script-display').textContent=SCRIPT;
+function copyScript(){ navigator.clipboard.writeText(SCRIPT).then(()=>toast('程式碼已複製 ✓')); }
+
+// ── Init ───────────────────────────────────────────────
+document.getElementById('f-date').value=today();
+document.getElementById('w-date').value=today();
+if(shUrl){ document.getElementById('sync-dot').className='ok'; }
+renderStreak();
+renderSummary();
+</script>
+</body>
+</html>
