@@ -451,12 +451,18 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
           <input type="url" id="sh-url" placeholder="https://script.google.com/macros/s/xxxxx/exec" style="font-size:12px">
         </div>
         <div class="btn-row" style="margin-top:0;flex-wrap:wrap">
-          <button class="btn btn-primary btn-sm" onclick="saveCfg()">儲存</button>
-          <button class="btn btn-secondary btn-sm" onclick="syncAll()">全部同步</button>
-          <button class="btn btn-secondary btn-sm" onclick="testConn()">測試</button>
+          <button class="btn btn-primary btn-sm" onclick="saveCfg()">儲存設定</button>
+          <button class="btn btn-secondary btn-sm" onclick="syncAll()">備份到 Sheets</button>
+          <button class="btn btn-secondary btn-sm" onclick="testConn()">測試連線</button>
+        </div>
+        <div class="btn-row" style="margin-top:8px;flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" onclick="restoreFromSheets()" style="border-color:#0a84ff;color:#0a84ff">⬇ 從 Sheets 還原資料</button>
         </div>
         <div id="sh-st" class="st"></div>
         <div style="margin-top:10px;font-size:12px;color:var(--text3)" id="sh-stats">尚未同步</div>
+        <div style="margin-top:10px;background:#f0f8ff;border-radius:var(--rs);padding:10px 12px;font-size:12px;color:#0a84ff;line-height:1.7">
+          💡 <b>備份建議：</b>每次更新 App 前先點「備份到 Sheets」，更新後若資料遺失可點「從 Sheets 還原資料」。
+        </div>
       </div>
       <div class="card">
         <div class="card-title">匯出資料</div>
@@ -549,8 +555,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 // ── 資料遷移 ───────────────────────────────────────────
-const KEYS={logs:'r100v4_logs',wts:'r100v4_wts',url:'r100v4_url'};
+const KEYS={logs:'r100v5_logs',wts:'r100v5_wts',url:'r100v5_url'};
 const OLD=[
+  {logs:'r100v4_logs',wts:'r100v4_wts',url:'r100v4_url'},
   {logs:'r100v3_logs',wts:'r100v3_wts',url:'r100v3_url'},
   {logs:'r100v2_logs',wts:'r100v2_wts',url:'r100v2_url'},
   {logs:'ft4_logs',wts:'ft4_wts',url:'ft4_url'},
@@ -694,6 +701,28 @@ function syncEntry(e){getReq({type:'workout',type2:e.type,id:e.id,date:e.date,di
 function setBadge(connected){const t=connected?'☁ 已連線':'本機';['hdr-badge','sb-badge'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=t;});}
 function saveCfg(){shUrl=document.getElementById('sh-url').value.trim();localStorage.setItem(KEYS.url,shUrl);document.getElementById('conn-dot').style.background=shUrl?'#30d158':'var(--text3)';document.getElementById('conn-lbl').textContent=shUrl?'已設定 ✓':'未設定';setBadge(!!shUrl);showSt('sh-st','ok','已儲存');}
 async function testConn(){saveCfg();if(!shUrl){toast('請先輸入 URL');return;}showSt('sh-st','pend','測試中...');try{const r=await fetch(shUrl+'?type=test',{mode:'cors'});await r.json();showSt('sh-st','ok','連線正常 ✓');}catch(e){showSt('sh-st','err','CORS 限制（正常）— 直接點全部同步測試寫入');}}
+async function restoreFromSheets(){
+  saveCfg();if(!shUrl){toast('請先設定 Sheets URL');return;}
+  showSt('sh-st','pend','從 Sheets 讀取資料...');
+  try{
+    const r=await fetch(shUrl+'?type=read_all',{mode:'cors'});
+    const j=await r.json();
+    if(!j.ok||!j.data){showSt('sh-st','err','讀取失敗：'+JSON.stringify(j));return;}
+    const{workouts,weights:wts}=j.data;
+    if(!workouts.length&&!wts.length){showSt('sh-st','err','Sheets 無資料');return;}
+    confirm2('確定從 Sheets 還原？',
+      `將載入 ${workouts.length} 筆訓練 + ${wts.length} 筆體重，覆蓋本機資料`,
+      ()=>{
+        logs=workouts;weights=wts;save();
+        renderStreak();renderSummary();renderCalendar();
+        showSt('sh-st','ok',`已還原 ${workouts.length} 筆訓練 ✓`);
+        toast('資料已從 Sheets 還原 ✓');
+      }
+    );
+  }catch(e){
+    showSt('sh-st','err','讀取失敗（CORS 限制）— Apps Script 需更新為新版程式碼');
+  }
+}
 async function syncAll(){saveCfg();if(!shUrl){toast('請先輸入 URL');return;}showSt('sh-st','pend','同步中...');const workouts=logs.map(e=>({id:e.id,date:e.date,type:e.type,dist:e.dist,sec:e.sec,timeFmt:fmtTime(e.sec),pace:e.pace?fmtPace(e.pace):'',hrAvg:e.hrAvg,hrMax:e.hrMax,pwAvg:e.pwAvg,pwMax:e.pwMax,cal:e.cal,aeroMin:e.aeroMin||0,anaeroMin:e.anaeroMin||0,zone:e.zone?e.zone.name:'',note:e.note}));const payload=encodeURIComponent(JSON.stringify({workouts,weights}));try{await fetch(shUrl+'?type=sync_all&payload='+payload,{mode:'no-cors'});showSt('sh-st','ok','已送出 ✓');document.getElementById('sh-stats').textContent=`上次：${new Date().toLocaleString('zh-TW')} | ${logs.length}筆`;}catch(e){showSt('sh-st','err','失敗：'+e.message);}}
 
 // ── Summary ────────────────────────────────────────────
