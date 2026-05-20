@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="100_Run">
 <meta name="theme-color" content="#ff9500">
 <link rel="manifest" href="manifest.json">
-<title>100_Run v6.1</title>
+<title>100_Run v7 自動同步版</title>
 <style>
 :root{
   --bg:#f2f2f7;--card:#fff;--sep:#e5e5ea;
@@ -492,20 +492,30 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
     </div>
     <div>
       <div class="card">
-        <div class="ct">Google Sheets 同步</div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <div class="ct">Google Sheets 自動同步</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
           <span id="conn-dot" style="width:9px;height:9px;border-radius:50%;background:var(--text3);display:inline-block;flex-shrink:0"></span>
           <span id="conn-lbl" style="font-size:13px;color:var(--text3)">未設定</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--text3)" id="sync-badge">—</span>
         </div>
-        <div class="fg" style="margin-bottom:12px"><label>Apps Script URL</label><input type="url" id="sh-url" placeholder="https://script.google.com/macros/s/xxxxx/exec" style="font-size:12px"></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:10px;background:var(--bg);border-radius:var(--rs)">
+          <span id="autosync-dot" style="width:9px;height:9px;border-radius:50%;background:var(--green);display:inline-block;flex-shrink:0"></span>
+          <span style="font-size:13px;color:var(--text);flex:1">自動雙向同步</span>
+          <button class="btn btn-secondary btn-sm" id="autosync-btn" onclick="toggleAutoSync()" style="font-size:11px">自動同步：開</button>
+        </div>
+        <div class="fg" style="margin-bottom:12px"><label>Apps Script URL（需 v3 版本）</label><input type="url" id="sh-url" placeholder="https://script.google.com/macros/s/xxxxx/exec" style="font-size:12px"></div>
         <div class="btn-row" style="margin-top:0;flex-wrap:wrap">
-          <button class="btn btn-primary btn-sm" onclick="saveCfg()">儲存</button>
-          <button class="btn btn-secondary btn-sm" onclick="syncAll()">備份到 Sheets</button>
+          <button class="btn btn-primary btn-sm" onclick="saveCfg()">儲存設定</button>
+          <button class="btn btn-secondary btn-sm" onclick="autoSync(false)">立即同步</button>
+          <button class="btn btn-secondary btn-sm" onclick="syncAll()">全部覆蓋上傳</button>
           <button class="btn btn-blue btn-sm" onclick="restoreFromSheets()">從 Sheets 還原</button>
         </div>
         <div id="sh-st" class="st"></div>
         <div style="margin-top:8px;font-size:12px;color:var(--text3)" id="sh-stats">尚未同步</div>
-        <div style="margin-top:10px;background:var(--blue-lt);border-radius:var(--rs);padding:10px 12px;font-size:12px;color:#0c447c;line-height:1.7">每次更新 App 前先點「備份到 Sheets」，更新後若資料遺失可點「從 Sheets 還原」。</div>
+        <div style="margin-top:10px;background:var(--blue-lt);border-radius:var(--rs);padding:10px 12px;font-size:12px;color:#0c447c;line-height:1.7">
+          <strong>自動雙向同步：</strong>App 啟動、切回前景、每 60 秒，會自動與 Sheets 雙向合併。<br>
+          手機新增 → 雲端 → 電腦看得到。
+        </div>
       </div>
       <div class="card">
         <div class="ct">匯出資料</div>
@@ -557,7 +567,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
   <div id="confirm-box">
     <div class="cfm-title" id="cfm-title">確定刪除？</div>
     <div class="cfm-sub" id="cfm-sub">此操作無法復原</div>
-    <div class="cfm-btns"><button class="btn btn-secondary" onclick="confirmNo()">取消</button><button class="btn btn-danger" onclick="confirmYes()">刪除</button></div>
+    <div class="cfm-btns"><button class="btn btn-secondary" onclick="confirmNo()">取消</button><button class="btn btn-danger" id="cfm-yes-btn" onclick="confirmYes()">確認</button></div>
   </div>
 </div>
 
@@ -605,7 +615,7 @@ function dayDiff(a,b){return Math.round((new Date(b)-new Date(a))/86400000);}
 // ── UI helpers ─────────────────────────────────────────
 function toast(msg,dur=2400){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 function showSt(id,type,msg){const el=document.getElementById(id);el.className='st st-'+type;el.textContent=msg;if(type==='ok')setTimeout(()=>{el.className='st';},3000);}
-function confirm2(title,sub,cb){document.getElementById('cfm-title').textContent=title;document.getElementById('cfm-sub').textContent=sub;confirmCb=cb;document.getElementById('confirm-overlay').classList.add('show');}
+function confirm2(title,sub,cb,btnText){document.getElementById('cfm-title').textContent=title;document.getElementById('cfm-sub').textContent=sub;document.getElementById('cfm-yes-btn').textContent=btnText||'確認';confirmCb=cb;document.getElementById('confirm-overlay').classList.add('show');}
 function confirmYes(){document.getElementById('confirm-overlay').classList.remove('show');if(confirmCb)confirmCb();confirmCb=null;}
 function confirmNo(){document.getElementById('confirm-overlay').classList.remove('show');confirmCb=null;}
 function setBadge(c){const t=c?'☁ 已連線':'超慢跑挑戰';['hdr-badge','sb-badge'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=t;});}
@@ -666,11 +676,11 @@ function buildEntry(px){
     aeroMin:z&&sec?Math.round(sec/60*z.aero/100):0,anaeroMin:z&&sec?Math.round(sec/60*z.anaero/100):0};
 }
 function addEntry(){
-  const e={id:Date.now(),...buildEntry('f')};
+  const e={id:Date.now(),updatedAt:new Date().toISOString(),...buildEntry('f')};
   if(!e.date){toast('請選擇日期');return;}
   logs.push(e);logs.sort((a,b)=>a.date.localeCompare(b.date));
   save();renderSummary();renderChallenge();
-  if(shUrl)syncEntry(e);
+  if(shUrl)upsertEntry(e);
   ['f-dst','f-time','f-hra','f-hrm','f-pwa','f-pwm','f-cal','f-note'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-date').value=today();document.getElementById('ac-box').style.display='none';
   toast('記錄已儲存 ✓');
@@ -688,13 +698,18 @@ function openEdit(id){
 function closeEdit(){document.getElementById('edit-overlay').classList.remove('show');}
 function saveEdit(){
   const id=parseInt(document.getElementById('e-id').value);const idx=logs.findIndex(l=>l.id===id);if(idx<0)return;
-  const u={id,...buildEntry('e')};if(!u.date){toast('請選擇日期');return;}
+  const u={id,updatedAt:new Date().toISOString(),...buildEntry('e')};if(!u.date){toast('請選擇日期');return;}
   logs[idx]=u;logs.sort((a,b)=>a.date.localeCompare(b.date));
-  save();renderHistory();renderSummary();renderChallenge();closeEdit();toast('已修改 ✓');
+  save();renderHistory();renderSummary();renderChallenge();closeEdit();
+  if(shUrl)upsertEntry(u);
+  toast('已修改 ✓');
 }
 function delEntry(id){
   const e=logs.find(l=>l.id===id);
-  confirm2('確定刪除？',e?e.date+' '+tLbl[e.type]:'',()=>{logs=logs.filter(l=>l.id!==id);save();renderHistory();renderSummary();renderChallenge();toast('已刪除');});
+  confirm2('確定刪除？',e?e.date+' '+tLbl[e.type]:'',()=>{
+    if(shUrl)getReq({type:'delete',kind:'workout',id});
+    logs=logs.filter(l=>l.id!==id);save();renderHistory();renderSummary();renderChallenge();toast('已刪除');
+  },'刪除');
 }
 
 // ── Goals ─────────────────────────────────────────────
@@ -1032,12 +1047,16 @@ function renderZone(){
 function addWeight(){
   const d=document.getElementById('w-date').value,v=parseFloat(document.getElementById('w-val').value);
   if(!d||!v){toast('請輸入日期與體重');return;}
-  weights=weights.filter(w=>w.date!==d);weights.push({date:d,val:v});weights.sort((a,b)=>a.date.localeCompare(b.date));
+  const now=new Date().toISOString();
+  weights=weights.filter(w=>w.date!==d);weights.push({date:d,val:v,updatedAt:now});weights.sort((a,b)=>a.date.localeCompare(b.date));
   save();renderWeight();if(shUrl)getReq({type:'weight',date:d,val:v});
   document.getElementById('w-val').value='';document.getElementById('w-date').value=today();
   toast('體重已記錄 ✓');showSt('w-st','ok','儲存成功');
 }
-function delWeight(date){confirm2('確定刪除體重記錄？',date,()=>{weights=weights.filter(w=>w.date!==date);save();renderWeight();toast('已刪除');});}
+function delWeight(date){confirm2('確定刪除體重記錄？',date,()=>{
+  if(shUrl)getReq({type:'delete',kind:'weight',date});
+  weights=weights.filter(w=>w.date!==date);save();renderWeight();toast('已刪除');
+},'刪除');}
 function renderWeight(){
   document.getElementById('w-goal').textContent=goals.tw.toFixed(1);
   if(!weights.length){['w-cur','w-min','w-delta'].forEach(id=>document.getElementById(id).textContent='—');document.getElementById('w-list').innerHTML='<div class="empty">尚無記錄</div>';return;}
@@ -1050,7 +1069,8 @@ function renderWeight(){
 
 // ── Sheets ─────────────────────────────────────────────
 async function getReq(p){if(!shUrl)return;try{await fetch(shUrl+'?'+new URLSearchParams(p),{mode:'no-cors'});}catch(e){}}
-function syncEntry(e){getReq({type:'workout',type2:e.type,id:e.id,date:e.date,dist:e.dist,sec:e.sec,timeFmt:fmtTime(e.sec),pace:e.pace?fmtPace(e.pace):'',hrAvg:e.hrAvg,hrMax:e.hrMax,pwAvg:e.pwAvg,pwMax:e.pwMax,cal:e.cal,aeroMin:e.aeroMin,anaeroMin:e.anaeroMin,zone:e.zone?e.zone.name:'',note:e.note});}
+function upsertEntry(e){getReq({type:'upsert',kind:'workout',type2:e.type,id:e.id,date:e.date,dist:e.dist,sec:e.sec,timeFmt:fmtTime(e.sec),pace:e.pace?fmtPace(e.pace):'',hrAvg:e.hrAvg,hrMax:e.hrMax,pwAvg:e.pwAvg,pwMax:e.pwMax,cal:e.cal,aeroMin:e.aeroMin,anaeroMin:e.anaeroMin,zone:e.zone?e.zone.name:'',note:e.note});}
+function syncEntry(e){upsertEntry(e);}
 function saveCfg(){shUrl=document.getElementById('sh-url').value.trim();localStorage.setItem(KEYS.url,shUrl);document.getElementById('conn-dot').style.background=shUrl?'#30d158':'var(--text3)';document.getElementById('conn-lbl').textContent=shUrl?'已設定 ✓':'未設定';setBadge(!!shUrl);showSt('sh-st','ok','已儲存');}
 async function testConn(){saveCfg();if(!shUrl){toast('請先輸入 URL');return;}showSt('sh-st','pend','測試中...');try{const r=await fetch(shUrl+'?type=test',{mode:'cors'});await r.json();showSt('sh-st','ok','連線正常 ✓');}catch(e){showSt('sh-st','err','CORS 限制（正常）— 直接點備份測試');}}
 async function syncAll(){
@@ -1068,10 +1088,10 @@ async function restoreFromSheets(){
     const{workouts,weights:wts}=j.data;
     if(!workouts.length&&!wts.length){showSt('sh-st','err','Sheets 無資料');return;}
     confirm2('確定從 Sheets 還原？',`訓練 ${workouts.length} 筆 + 體重 ${wts.length} 筆，將覆蓋本機資料`,()=>{
-      logs=workouts;weights=wts;save();renderChallenge();renderSummary();renderWeight();
-      showSt('sh-st','ok',`已還原 ${workouts.length} 筆訓練 ✓`);toast('資料已從 Sheets 還原 ✓');
-    });
-  }catch(e){showSt('sh-st','err','讀取失敗（需更新 Apps Script 為 v2 版本）');}
+      logs=workouts.filter(w=>!w.deleted);weights=wts.filter(w=>!w.deleted);save();renderChallenge();renderSummary();renderWeight();
+      showSt('sh-st','ok',`已還原 ${logs.length} 筆訓練 ✓`);toast('資料已從 Sheets 還原 ✓');
+    },'還原');
+  }catch(e){showSt('sh-st','err','讀取失敗（需更新 Apps Script 為 v3 版本）');}
 }
 
 // ── Export ─────────────────────────────────────────────
@@ -1091,18 +1111,7 @@ function exportXLSX(){
 }
 
 // ── PWA ───────────────────────────────────────────────
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js').then(reg=>{
-    reg.update();
-    if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});
-    reg.addEventListener('updatefound',()=>{
-      const nw=reg.installing;
-      if(nw)nw.addEventListener('statechange',()=>{if(nw.state==='installed'&&navigator.serviceWorker.controller){window.location.reload();}});
-    });
-  }).catch(()=>{});
-  let refreshing=false;
-  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(refreshing)return;refreshing=true;window.location.reload();});
-}
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;const b=document.getElementById('install-btn');if(b)b.hidden=false;});
 function installPWA(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;});}}
 
@@ -1122,7 +1131,93 @@ function sw(t){
   if(t==='kpi')renderKPI();
   if(t==='alert')renderAlert();
   if(t==='zone')renderZone();
-  if(t==='settings'){loadGoalInputs();if(shUrl){document.getElementById('sh-url').value=shUrl;document.getElementById('conn-dot').style.background='#30d158';document.getElementById('conn-lbl').textContent='已設定 ✓';}}
+  if(t==='settings'){
+    loadGoalInputs();
+    if(shUrl){document.getElementById('sh-url').value=shUrl;document.getElementById('conn-dot').style.background='#30d158';document.getElementById('conn-lbl').textContent='已設定 ✓';}
+    const ab=document.getElementById('autosync-btn');if(ab)ab.textContent=autoSyncEnabled?'自動同步：開':'自動同步：關';
+    const ad=document.getElementById('autosync-dot');if(ad)ad.style.background=autoSyncEnabled?'var(--green)':'var(--text3)';
+    if(lastSyncTime){
+      const t=new Date(lastSyncTime);
+      document.getElementById('sh-stats').textContent='上次同步：'+t.toLocaleString('zh-TW');
+    }
+  }
+}
+
+
+// ── 自動雙向同步 ───────────────────────────────────────
+let autoSyncEnabled=true;let lastSyncTime=null;let syncInProgress=false;
+try{autoSyncEnabled=localStorage.getItem('r100v6_autosync')!=='false';}catch(e){}
+try{lastSyncTime=localStorage.getItem('r100v6_lastsync')||null;}catch(e){}
+
+async function autoSync(silent=false){
+  if(!shUrl||!autoSyncEnabled||syncInProgress)return;
+  syncInProgress=true;
+  if(!silent)updateSyncStatus('同步中...','pend');
+  try{
+    const payload=encodeURIComponent(JSON.stringify({
+      workouts:logs.map(e=>({...e,zone:e.zone?e.zone.name:'',pace:e.pace?fmtPace(e.pace):''})),
+      weights:weights
+    }));
+    const r=await fetch(shUrl+'?type=sync&payload='+payload,{mode:'cors'});
+    const j=await r.json();
+    if(j.ok&&j.data){
+      // 合併回本機（過濾掉軟刪除）
+      logs=j.data.workouts.filter(w=>!w.deleted).map(w=>{
+        if(w.zone&&typeof w.zone==='string')w.zone={name:w.zone,aero:w.aeroMin||0,anaero:w.anaeroMin||0};
+        if(w.sec&&w.dist&&!w.pace)w.pace=calcPace(w.dist,w.sec);
+        else if(typeof w.pace==='string'&&w.pace){const m=w.pace.match(/^(\d+):(\d+)/);if(m)w.pace={min:parseInt(m[1]),sec:parseInt(m[2]),total:parseInt(m[1])*60+parseInt(m[2])};}
+        return w;
+      });
+      weights=j.data.weights.filter(w=>!w.deleted);
+      save();
+      lastSyncTime=j.serverTime||new Date().toISOString();
+      localStorage.setItem('r100v6_lastsync',lastSyncTime);
+      renderChallenge();renderSummary();
+      // 如果當前在某個分頁，重新渲染
+      const activeSec=SECS.find(s=>document.getElementById('sec-'+s).classList.contains('active'));
+      if(activeSec==='history')renderHistory();
+      else if(activeSec==='weight')renderWeight();
+      else if(activeSec==='chart')initRingChart();
+      else if(activeSec==='kpi')renderKPI();
+      else if(activeSec==='alert')renderAlert();
+      if(!silent)updateSyncStatus('已同步 ✓','ok');
+    }else{
+      if(!silent)updateSyncStatus('同步失敗','err');
+    }
+  }catch(e){
+    if(!silent)updateSyncStatus('離線中','err');
+  }finally{
+    syncInProgress=false;
+  }
+}
+
+function updateSyncStatus(msg,type){
+  const el=document.getElementById('sync-badge');if(!el)return;
+  el.textContent=msg;
+  el.style.color={ok:'var(--green)',pend:'var(--accent)',err:'var(--red)'}[type]||'var(--text3)';
+}
+
+function toggleAutoSync(){
+  autoSyncEnabled=!autoSyncEnabled;
+  localStorage.setItem('r100v6_autosync',autoSyncEnabled);
+  const btn=document.getElementById('autosync-btn');
+  if(btn)btn.textContent=autoSyncEnabled?'自動同步：開':'自動同步：關';
+  const dot=document.getElementById('autosync-dot');
+  if(dot)dot.style.background=autoSyncEnabled?'var(--green)':'var(--text3)';
+  toast(autoSyncEnabled?'自動同步已開啟':'自動同步已關閉');
+}
+
+// 啟動時自動同步
+function startAutoSync(){
+  if(!shUrl||!autoSyncEnabled)return;
+  // 啟動時拉一次
+  setTimeout(()=>autoSync(true),800);
+  // 切回前景時拉一次
+  document.addEventListener('visibilitychange',()=>{
+    if(!document.hidden)autoSync(true);
+  });
+  // 每 60 秒輪詢
+  setInterval(()=>{if(!document.hidden)autoSync(true);},60000);
 }
 
 // ── Init ───────────────────────────────────────────────
@@ -1130,6 +1225,7 @@ document.getElementById('f-date').value=today();
 document.getElementById('w-date').value=today();
 setBadge(!!shUrl);
 renderChallenge();renderSummary();
+startAutoSync();
 </script>
 </body>
 </html>
