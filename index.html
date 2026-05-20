@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="100_Run">
+<meta name="theme-color" content="#ff9500">
+<link rel="manifest" href="manifest.json">
+<title>100_Run v6.1</title>
+<style>
+:root{
+  --bg:#f2f2f7;--card:#fff;--sep:#e5e5ea;
+  --text:#1c1c1e;--text2:#3a3a3c;--text3:#8e8e93;
+  --accent:#ff9500;--accent-lt:#fff3e0;--accent-dk:#9a4a10;
+  --green:#30d158;--green-lt:#e8faf0;
+  --blue:#0a84ff;--blue-lt:#e6f4ff;
+  --purple:#bf5af2;--red:#ff3b30;--red-lt:#fff0f0;
+  --r:14px;--rs:10px;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --nav-h:56px;--sb-w:220px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif}
+
+/* ── MOBILE ── */
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+#sidebar{display:none}
+#header{padding:calc(var(--safe-top)+10px) 16px 10px;background:var(--card);border-bottom:0.5px solid var(--sep);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.hdr-title{font-size:17px;font-weight:700;letter-spacing:-0.3px}
+.hdr-title span{color:var(--accent)}
+.hdr-badge{font-size:11px;color:var(--text3);background:var(--bg);padding:3px 9px;border-radius:20px}
+#content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:12px 12px calc(var(--nav-h)+var(--safe-bottom)+12px)}
+#nav{position:fixed;bottom:0;left:0;right:0;height:calc(var(--nav-h)+var(--safe-bottom));padding-bottom:var(--safe-bottom);background:rgba(255,255,255,0.94);backdrop-filter:blur(12px);border-top:0.5px solid var(--sep);display:flex;z-index:100}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--text3);font-size:10px;font-weight:500;border:none;background:none;cursor:pointer;padding:0;transition:color .12s}
+.nav-btn.active{color:var(--accent)}
+.nav-btn i{font-size:21px}
+
+/* ── DESKTOP ── */
+@media(min-width:768px){
+  body{overflow:hidden}
+  #app{flex-direction:row;height:100vh}
+  #header{display:none}
+  #nav{display:none}
+  #sidebar{display:flex;flex-direction:column;width:var(--sb-w);flex-shrink:0;background:var(--card);border-right:0.5px solid var(--sep);padding:20px 0 16px}
+  .sb-logo{padding:0 18px 20px;font-size:17px;font-weight:700;color:var(--text);border-bottom:0.5px solid var(--sep);margin-bottom:6px}
+  .sb-logo span{color:var(--accent)}
+  .sb-sub{font-size:10px;color:var(--text3);font-weight:400;display:block;margin-top:2px}
+  .sb-item{display:flex;align-items:center;gap:10px;padding:10px 18px;font-size:13px;font-weight:500;color:var(--text3);cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:background .1s,color .1s}
+  .sb-item i{font-size:17px;width:20px;text-align:center}
+  .sb-item.active{color:var(--accent);background:var(--accent-lt)}
+  .sb-item:hover:not(.active){background:var(--bg);color:var(--text)}
+  .sb-div{height:0.5px;background:var(--sep);margin:6px 14px}
+  #content{padding:20px;overflow-y:auto;flex:1}
+  .rwd2{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+  .rwd2 .card{margin-bottom:0}
+  .rwd-full{grid-column:1/-1}
+}
+
+/* ── Base ── */
+.sec{display:none}.sec.active{display:block}
+.card{background:var(--card);border-radius:var(--r);padding:14px 16px;margin-bottom:12px}
+.ct{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px}
+.chdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.chdr .ct{margin-bottom:0}
+
+/* Metrics */
+.mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:12px}
+.mc{background:var(--bg);border-radius:var(--rs);padding:10px 10px}
+.mc-l{font-size:10px;color:var(--text3);margin-bottom:3px;font-weight:500}
+.mc-v{font-size:18px;font-weight:700;line-height:1;letter-spacing:-0.5px}
+.mc-u{font-size:10px;color:var(--text3);margin-top:1px}
+
+/* Progress */
+.pr{margin-bottom:10px}
+.pr-hdr{display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px}
+.pr-l{color:var(--text3)}
+.pr-v{font-weight:600;color:var(--text)}
+.pr-track{height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.pr-bar{height:100%;border-radius:3px;transition:width .4s}
+
+/* Ring */
+.ring-area{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+.rw{position:relative;flex-shrink:0}
+.rc{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.rc-l{font-size:10px;color:var(--text3);font-weight:500}
+.rc-v{font-size:22px;font-weight:700;color:var(--text);line-height:1;letter-spacing:-0.5px}
+.rc-u{font-size:10px;color:var(--text3)}
+.rm-area{flex:1;min-width:0}
+.rm-row{margin-bottom:10px}
+.rm-row:last-child{margin-bottom:0}
+.rm-hdr{display:flex;justify-content:space-between;margin-bottom:4px}
+.rm-l{font-size:11px;color:var(--text3)}
+.rm-v{font-size:12px;font-weight:600;color:var(--text)}
+.rm-track{height:5px;background:var(--bg);border-radius:3px;overflow:hidden}
+.rm-bar{height:100%;border-radius:3px;transition:width .4s}
+.rleg{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.rl{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text3)}
+.rl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* 100-day calendar */
+.cal100{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin-bottom:8px}
+.c100{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600}
+.c-done{background:var(--accent);color:#fff}
+.c-miss{background:#fff3e0;color:#ff9500;border:0.5px solid #fbd9b0}
+.c-today{background:var(--accent);color:#fff;outline:2.5px solid #ff6b00;outline-offset:1px}
+.c-future{background:var(--bg);color:var(--text3);opacity:0.3}
+
+/* Alert */
+.al-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--sep)}
+.al-item:last-child{border-bottom:none}
+.al-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;margin-top:1px}
+.ai-red{background:var(--red-lt);color:var(--red)}
+.ai-orange{background:var(--accent-lt);color:var(--accent)}
+.ai-green{background:var(--green-lt);color:var(--green)}
+.ai-blue{background:var(--blue-lt);color:var(--blue)}
+.al-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.al-sub{font-size:11px;color:var(--text3);line-height:1.5}
+.badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;margin-left:5px}
+.b-red{background:var(--red-lt);color:var(--red)}
+.b-orange{background:var(--accent-lt);color:var(--accent-dk)}
+.b-green{background:var(--green-lt);color:#1a7f37}
+.b-blue{background:var(--blue-lt);color:#0c447c}
+
+/* Zone */
+.z-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.z-name{font-size:11px;font-weight:600;width:64px;flex-shrink:0}
+.z-track{flex:1;height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.z-bar{height:100%;border-radius:3px}
+.z-bpm{font-size:10px;color:var(--text3);width:72px;text-align:right;flex-shrink:0}
+
+/* Forms */
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.fg label{font-size:12px;color:var(--text3);font-weight:500}
+.fg input,.fg select{background:var(--bg);border:none;border-radius:var(--rs);padding:10px 12px;font-size:14px;color:var(--text);width:100%;outline:none;-webkit-appearance:none}
+.fg input:focus{background:var(--accent-lt)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-full{grid-column:1/-1}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 16px;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:opacity .15s,transform .1s;width:100%}
+.btn:active{transform:scale(0.97)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-secondary{background:var(--bg);color:var(--text2)}
+.btn-danger{background:var(--red-lt);color:var(--red)}
+.btn-blue{background:var(--blue-lt);color:#0c447c}
+.btn-sm{padding:7px 12px;font-size:12px;width:auto}
+.btn-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+
+/* Misc */
+.st{font-size:12px;padding:8px 12px;border-radius:var(--rs);margin-top:10px;display:none}
+.st-ok{display:block;background:var(--green-lt);color:#1a7f37}
+.st-err{display:block;background:var(--red-lt);color:var(--red)}
+.st-pend{display:block;background:var(--accent-lt);color:var(--accent-dk)}
+.log-item{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:0.5px solid var(--sep)}
+.log-item:last-child{border-bottom:none}
+.log-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.log-body{flex:1;min-width:0}
+.log-date{font-size:13px;font-weight:700;color:var(--text)}
+.log-meta{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.7}
+.log-acts{display:flex;gap:5px;flex-shrink:0}
+.icon-btn{width:30px;height:30px;border-radius:8px;border:none;background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:14px}
+.icon-btn-del{background:var(--red-lt);color:var(--red)}
+.pr-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pr-c{background:var(--bg);border-radius:var(--rs);padding:10px 12px}
+.pr-lbl{font-size:10px;color:var(--text3);margin-bottom:2px;font-weight:500}
+.pr-val{font-size:16px;font-weight:700;color:var(--text)}
+.pr-dt{font-size:10px;color:var(--text3);margin-top:2px}
+.hm-wrap{overflow-x:auto;padding-bottom:4px}
+.hm-inner{display:flex;gap:3px;width:max-content}
+.hm-col{display:flex;flex-direction:column;gap:3px}
+.hm-cell{width:12px;height:12px;border-radius:2px}
+.hm-mrow{display:flex;gap:3px;width:max-content;margin-bottom:3px}
+.hm-mlbl{width:12px;font-size:9px;color:var(--text3);text-align:center}
+.streak-num{font-size:64px;font-weight:800;color:var(--accent);line-height:1;letter-spacing:-3px}
+.streak-sub{font-size:13px;color:var(--text3);margin-top:4px}
+.w-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--sep);font-size:13px}
+.w-item:last-child{border-bottom:none}
+.ac-box{background:var(--accent-lt);border-radius:var(--rs);padding:12px;margin:10px 0;display:none}
+.ac-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.ac-l{font-size:10px;color:var(--text3);margin-bottom:2px;font-weight:500}
+.ac-v{font-size:15px;font-weight:700;color:var(--accent)}
+.hr-warn{background:var(--red-lt);border:0.5px solid #fecaca;border-radius:var(--rs);padding:10px 12px;font-size:12px;color:var(--red);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.metric-tab-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.mt{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:var(--bg);color:var(--text3);border:0.5px solid var(--sep);transition:all .12s}
+.mt.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.period-row{display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap}
+.pchip{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:var(--bg);color:var(--text3);border:1.5px solid transparent}
+.pchip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pchip.has{border-color:var(--accent);color:var(--accent)}
+
+/* Edit sheet */
+#edit-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:200;align-items:flex-end;justify-content:center}
+#edit-overlay.show{display:flex}
+#edit-sheet{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:88vh;overflow-y:auto;padding:20px 16px calc(var(--safe-bottom)+20px)}
+.sheet-title{font-size:17px;font-weight:700;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.sheet-close{width:28px;height:28px;border-radius:50%;background:var(--bg);border:none;cursor:pointer;font-size:16px;color:var(--text3)}
+
+/* Confirm */
+#confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:250;align-items:center;justify-content:center;padding:20px}
+#confirm-overlay.show{display:flex}
+#confirm-box{background:var(--card);border-radius:var(--r);padding:22px;width:100%;max-width:300px;text-align:center}
+.cfm-title{font-size:15px;font-weight:700;margin-bottom:6px}
+.cfm-sub{font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.5}
+.cfm-btns{display:flex;gap:8px}
+.cfm-btns .btn{flex:1}
+
+/* Toast */
+#toast{position:fixed;bottom:calc(var(--nav-h)+var(--safe-bottom)+12px);left:50%;transform:translateX(-50%) translateY(12px);background:rgba(28,28,30,0.9);color:#fff;font-size:13px;padding:10px 20px;border-radius:24px;z-index:300;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap}
+@media(min-width:768px){#toast{bottom:20px}}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.empty{text-align:center;padding:28px;color:var(--text3);font-size:13px}
+</style>
+</head>
+<body>
+<div id="app">
+
+<div id="sidebar">
+  <div class="sb-logo"><span>100</span>_Run<span class="sb-sub" id="sb-badge">超慢跑挑戰</span></div>
+  <button class="sb-item active" onclick="sw('challenge')" id="sb-challenge"><i class="ti ti-flame" aria-hidden="true"></i>挑戰進度</button>
+  <button class="sb-item" onclick="sw('log')" id="sb-log"><i class="ti ti-circle-plus" aria-hidden="true"></i>新增記錄</button>
+  <button class="sb-item" onclick="sw('history')" id="sb-history"><i class="ti ti-clipboard-list" aria-hidden="true"></i>歷史記錄</button>
+  <button class="sb-item" onclick="sw('chart')" id="sb-chart"><i class="ti ti-chart-donut" aria-hidden="true"></i>圖表分析</button>
+  <div class="sb-div"></div>
+  <button class="sb-item" onclick="sw('kpi')" id="sb-kpi"><i class="ti ti-target" aria-hidden="true"></i>KPI 達成率</button>
+  <button class="sb-item" onclick="sw('alert')" id="sb-alert"><i class="ti ti-bell" aria-hidden="true"></i>警示</button>
+  <button class="sb-item" onclick="sw('zone')" id="sb-zone"><i class="ti ti-heart" aria-hidden="true"></i>心率區間</button>
+  <div class="sb-div"></div>
+  <button class="sb-item" onclick="sw('weight')" id="sb-weight"><i class="ti ti-scale" aria-hidden="true"></i>體重記錄</button>
+  <button class="sb-item" onclick="sw('settings')" id="sb-settings"><i class="ti ti-settings" aria-hidden="true"></i>設定與同步</button>
+</div>
+
+<div id="header">
+  <div class="hdr-title"><span>100</span>_Run</div>
+  <div class="hdr-badge" id="hdr-badge">超慢跑挑戰</div>
+</div>
+
+<div id="content">
+
+<!-- 挑戰進度 -->
+<div id="sec-challenge" class="sec active">
+  <div class="card">
+    <div class="ct">100天超慢跑挑戰</div>
+    <div class="ring-area">
+      <div class="rw" style="width:150px;height:150px">
+        <canvas id="c-challenge" role="img" aria-label="100天挑戰進度環形圖">挑戰進度</canvas>
+        <div class="rc" style="width:90px">
+          <div class="rc-l">第</div>
+          <div class="rc-v" id="ch-day" style="font-size:32px;color:var(--accent)">0</div>
+          <div class="rc-u">/ 100 天</div>
+        </div>
+      </div>
+      <div class="rm-area">
+        <div class="mg" style="margin-bottom:10px;grid-template-columns:1fr 1fr">
+          <div class="mc"><div class="mc-l">累積距離</div><div class="mc-v" id="ch-dist">0</div><div class="mc-u">km</div></div>
+          <div class="mc"><div class="mc-l">目標距離</div><div class="mc-v" id="ch-goal-dist">800</div><div class="mc-u">km</div></div>
+          <div class="mc"><div class="mc-l">今日狀態</div><div class="mc-v" id="ch-today-st" style="font-size:14px">—</div><div class="mc-u" id="ch-today-sub"></div></div>
+          <div class="mc"><div class="mc-l">剩餘天數</div><div class="mc-v" id="ch-remain">100</div><div class="mc-u">天</div></div>
+        </div>
+        <div class="pr">
+          <div class="pr-hdr"><span class="pr-l">挑戰進度</span><span class="pr-v" id="ch-pct">0%</span></div>
+          <div class="pr-track"><div class="pr-bar" id="ch-bar" style="background:var(--accent);width:0%"></div></div>
+        </div>
+        <div class="pr" style="margin-bottom:0">
+          <div class="pr-hdr"><span class="pr-l">距離達成率</span><span class="pr-v" id="ch-dpct">0%</span></div>
+          <div class="pr-track"><div class="pr-bar" id="ch-dbar" style="background:var(--blue);width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">100天行事曆</div>
+    <div class="cal100" id="cal-100"></div>
+    <div style="display:flex;gap:12px;font-size:11px;color:var(--text3);flex-wrap:wrap">
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:var(--accent);display:inline-block"></span>達標</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#fff3e0;border:0.5px solid #fbd9b0;display:inline-block"></span>未達標</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:var(--bg);display:inline-block;opacity:0.4"></span>待挑戰</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">連續天數</div>
+    <div style="text-align:center;padding:12px 0 10px">
+      <div style="font-size:40px;margin-bottom:6px">🔥</div>
+      <div class="streak-num" id="sk-cur">0</div>
+      <div class="streak-sub">當前連續天數</div>
+    </div>
+    <div class="mg" style="margin-bottom:0">
+      <div class="mc"><div class="mc-l">最長連續</div><div class="mc-v" id="sk-best" style="color:var(--green)">0</div><div class="mc-u">天</div></div>
+      <div class="mc"><div class="mc-l">總訓練</div><div class="mc-v" id="sk-total">0</div><div class="mc-u">天</div></div>
+      <div class="mc"><div class="mc-l">本月</div><div class="mc-v" id="sk-month">0</div><div class="mc-u">天</div></div>
+      <div class="mc"><div class="mc-l">完成率</div><div class="mc-v" id="sk-rate">0</div><div class="mc-u">%</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">26週熱力圖</div>
+    <div class="hm-wrap"><div id="hm-months" class="hm-mrow"></div><div id="hm-grid" class="hm-inner"></div></div>
+  </div>
+</div>
+
+<!-- 記錄 -->
+<div id="sec-log" class="sec">
+  <div class="mg">
+    <div class="mc"><div class="mc-l">本週次數</div><div class="mc-v" id="sm-cnt">0</div><div class="mc-u">次</div></div>
+    <div class="mc"><div class="mc-l">距離</div><div class="mc-v" id="sm-dst">0.0</div><div class="mc-u">km</div></div>
+    <div class="mc"><div class="mc-l">時間</div><div class="mc-v" id="sm-tm">0:00</div><div class="mc-u">h:mm</div></div>
+    <div class="mc"><div class="mc-l">熱量</div><div class="mc-v" id="sm-cal">0</div><div class="mc-u">kcal</div></div>
+  </div>
+  <div class="card">
+    <div class="ct">新增訓練</div>
+    <div class="form-grid">
+      <div class="fg"><label>日期</label><input type="date" id="f-date"></div>
+      <div class="fg"><label>類型</label><select id="f-type"><option value="run">跑步</option><option value="cycle">騎車</option><option value="swim">游泳</option><option value="other">其他</option></select></div>
+      <div class="fg"><label>距離 (km)</label><input type="number" id="f-dst" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></div>
+      <div class="fg"><label>時間 mm:ss.ms</label><input type="text" id="f-time" placeholder="42:30.500" inputmode="numeric"></div>
+      <div class="fg"><label>平均心率 (bpm)</label><input type="number" id="f-hra" min="0" placeholder="—" inputmode="numeric"></div>
+      <div class="fg"><label>最大心率 (bpm)</label><input type="number" id="f-hrm" min="0" placeholder="—" inputmode="numeric"></div>
+      <div class="fg"><label>平均功率 (W)</label><input type="number" id="f-pwa" min="0" placeholder="—" inputmode="numeric"></div>
+      <div class="fg"><label>最大功率 (W)</label><input type="number" id="f-pwm" min="0" placeholder="—" inputmode="numeric"></div>
+      <div class="fg"><label>熱量 (kcal)</label><input type="number" id="f-cal" min="0" placeholder="—" inputmode="numeric"></div>
+      <div class="fg"><label>心率基準 (bpm)</label><input type="number" id="f-hrb" value="177" min="100" max="250" inputmode="numeric"></div>
+      <div class="fg form-full"><label>備註</label><input type="text" id="f-note" placeholder="今天狀況..."></div>
+    </div>
+    <div class="ac-box" id="ac-box">
+      <div class="ac-grid">
+        <div><div class="ac-l">配速</div><div class="ac-v" id="ac-p">—</div><div style="font-size:9px;color:var(--text3)">min/km</div></div>
+        <div><div class="ac-l">心率區間</div><div class="ac-v" id="ac-z">—</div></div>
+        <div><div class="ac-l">有氧</div><div class="ac-v" id="ac-a" style="color:var(--green)">—</div></div>
+        <div><div class="ac-l">無氧</div><div class="ac-v" id="ac-n" style="color:var(--red)">—</div></div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="addEntry()" style="margin-top:12px">儲存記錄</button>
+    <div id="log-st" class="st"></div>
+  </div>
+</div>
+
+<!-- 歷史 -->
+<div id="sec-history" class="sec">
+  <div class="card">
+    <div class="chdr">
+      <div class="ct">訓練記錄</div>
+      <div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm" onclick="exportCSV()">CSV</button><button class="btn btn-secondary btn-sm" onclick="exportXLSX()">Excel</button></div>
+    </div>
+    <div id="log-list" style="max-height:420px;overflow-y:auto"><div class="empty">尚無記錄</div></div>
+  </div>
+  <div class="card"><div class="ct">個人最佳 PR</div><div class="pr-grid" id="pr-grid"><div class="empty">尚無PR</div></div></div>
+</div>
+
+<!-- 圖表 -->
+<div id="sec-chart" class="sec">
+  <div class="card">
+    <div class="ct">累積訓練環形圖</div>
+    <div class="period-row" id="period-chips"></div>
+    <div class="ring-area">
+      <div class="rw" style="width:160px;height:160px">
+        <canvas id="c-ring" role="img" aria-label="訓練累積四環圖">KPI環形</canvas>
+        <div class="rc" style="width:80px">
+          <div class="rc-l" id="rc-date">累積</div>
+          <div class="rc-v" id="rc-val">0</div>
+          <div class="rc-u">km</div>
+        </div>
+      </div>
+      <div class="rm-area">
+        <div class="rm-row"><div class="rm-hdr"><span class="rm-l">距離達成</span><span class="rm-v" id="rm-dist">—</span></div><div class="rm-track"><div class="rm-bar" id="rb-dist" style="background:var(--accent);width:0"></div></div></div>
+        <div class="rm-row"><div class="rm-hdr"><span class="rm-l">平均心率</span><span class="rm-v" id="rm-hr">—</span></div><div class="rm-track"><div class="rm-bar" id="rb-hr" style="background:var(--green);width:0"></div></div></div>
+        <div class="rm-row"><div class="rm-hdr"><span class="rm-l">平均功率</span><span class="rm-v" id="rm-pw">—</span></div><div class="rm-track"><div class="rm-bar" id="rb-pw" style="background:var(--blue);width:0"></div></div></div>
+        <div class="rm-row"><div class="rm-hdr"><span class="rm-l">有氧比例</span><span class="rm-v" id="rm-aero">—</span></div><div class="rm-track"><div class="rm-bar" id="rb-aero" style="background:var(--purple);width:0"></div></div></div>
+        <div class="rleg"><div class="rl"><div class="rl-dot" style="background:var(--accent)"></div>距離</div><div class="rl"><div class="rl-dot" style="background:var(--green)"></div>心率</div><div class="rl"><div class="rl-dot" style="background:var(--blue)"></div>功率</div><div class="rl"><div class="rl-dot" style="background:var(--purple)"></div>有氧</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="metric-tab-row" id="metric-tabs">
+      <button class="mt active" onclick="setMetric('dist',this)">跑量</button>
+      <button class="mt" onclick="setMetric('hr',this)">心率</button>
+      <button class="mt" onclick="setMetric('pw',this)">功率</button>
+      <button class="mt" onclick="setMetric('pace',this)">配速</button>
+    </div>
+    <div style="position:relative;width:100%;height:160px"><canvas id="c-trend" role="img" aria-label="訓練趨勢折線圖">趨勢</canvas></div>
+  </div>
+  <div class="card"><div class="ct">體重趨勢</div><div style="position:relative;width:100%;height:150px"><canvas id="c-wt" role="img" aria-label="體重趨勢">體重</canvas></div></div>
+</div>
+
+<!-- KPI -->
+<div id="sec-kpi" class="sec">
+  <div class="card">
+    <div class="ct">本週 KPI</div>
+    <div class="mg" id="kpi-week-mg"></div>
+  </div>
+  <div class="card">
+    <div class="ct">100天挑戰累積</div>
+    <div class="ring-area">
+      <div class="rw" style="width:140px;height:140px">
+        <canvas id="c-kpi-ring" role="img" aria-label="KPI達成率環形圖">KPI</canvas>
+        <div class="rc" style="width:76px">
+          <div class="rc-l">達成率</div>
+          <div class="rc-v" id="kpi-pct" style="color:var(--accent)">0%</div>
+        </div>
+      </div>
+      <div class="rm-area">
+        <div class="rm-row"><div class="rm-hdr"><span class="rm-l">距離達成</span><span class="rm-v" id="kpi-dist">—</span></div><div class="rm-track"><div class="rm-bar" id="kpib-dist" style="background:var(--accent);width:0"></div></div></div>
+        <div class="rm-row"><div class="rm-hdr"><span class="rm-l">Z2心率達標</span><span class="rm-v" id="kpi-hr">—</span></div><div class="rm-track"><div class="rm-bar" id="kpib-hr" style="background:var(--green);width:0"></div></div></div>
+        <div class="rm-row"><div class="rm-hdr"><span class="rm-l">有氧比例</span><span class="rm-v" id="kpi-aero">—</span></div><div class="rm-track"><div class="rm-bar" id="kpib-aero" style="background:var(--blue);width:0"></div></div></div>
+        <div class="rm-row"><div class="rm-hdr"><span class="rm-l">完成天數</span><span class="rm-v" id="kpi-days">—</span></div><div class="rm-track"><div class="rm-bar" id="kpib-days" style="background:var(--purple);width:0"></div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">月 / 年累積進度</div>
+    <div id="kpi-long-prog"></div>
+  </div>
+</div>
+
+<!-- 警示 -->
+<div id="sec-alert" class="sec">
+  <div class="hr-warn"><i class="ti ti-alert-triangle" style="font-size:16px;flex-shrink:0" aria-hidden="true"></i><span>Z2 上限 <b>128 bpm</b> 提示降速 · Z4 警戒 <b>160 bpm</b> 紅色警告</span></div>
+  <div class="card"><div class="ct">即時警示</div><div id="alert-list"><div class="empty">暫無警示</div></div></div>
+  <div class="card">
+    <div class="ct">Z2 心率監控</div>
+    <div id="z2-monitor"></div>
+  </div>
+</div>
+
+<!-- 心率區間 -->
+<div id="sec-zone" class="sec">
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <div style="width:44px;height:44px;border-radius:50%;background:var(--accent-lt);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--accent);flex-shrink:0">T</div>
+      <div><div style="font-size:14px;font-weight:600">43歲男性 · 180cm · 77kg</div><div style="font-size:12px;color:var(--text3);margin-top:2px">HRmax 177 bpm · 靜止心率 54 bpm · BMI 23.8</div></div>
+    </div>
+    <div class="ct">Karvonen 心率區間</div>
+    <div id="zone-list"></div>
+  </div>
+  <div class="card">
+    <div class="ct">超慢跑訓練規範</div>
+    <div style="font-size:13px;color:var(--text3);line-height:2">
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--sep)"><span>目標心率</span><span style="font-weight:600;color:var(--blue)">110–128 bpm（Z2）</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--sep)"><span>建議配速</span><span style="font-weight:600;color:var(--text)">6:30–7:30 min/km</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--sep)"><span>每日最低門檻</span><span style="font-weight:600;color:var(--text)">2 km 或 20 分鐘</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--sep)"><span>心率 &gt; 128 bpm</span><span style="font-weight:600;color:var(--accent)">提示降速</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0"><span>心率 &gt; 160 bpm</span><span style="font-weight:600;color:var(--red)">紅色警告停止</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 體重 -->
+<div id="sec-weight" class="sec">
+  <div class="mg">
+    <div class="mc"><div class="mc-l">目前</div><div class="mc-v" id="w-cur">77.0</div><div class="mc-u">kg</div></div>
+    <div class="mc"><div class="mc-l">最低</div><div class="mc-v" id="w-min" style="color:var(--green)">—</div><div class="mc-u">kg</div></div>
+    <div class="mc"><div class="mc-l">目標</div><div class="mc-v" id="w-goal">74.0</div><div class="mc-u">kg</div></div>
+    <div class="mc"><div class="mc-l">變化</div><div class="mc-v" id="w-delta">—</div><div class="mc-u">kg</div></div>
+  </div>
+  <div class="card">
+    <div class="ct">記錄體重</div>
+    <div class="form-grid" style="margin-bottom:12px">
+      <div class="fg"><label>日期</label><input type="date" id="w-date"></div>
+      <div class="fg"><label>體重 (kg)</label><input type="number" id="w-val" min="0" step="0.1" placeholder="kg" inputmode="decimal"></div>
+    </div>
+    <button class="btn btn-primary" onclick="addWeight()">儲存</button>
+    <div id="w-st" class="st"></div>
+  </div>
+  <div class="card"><div class="ct">體重記錄</div><div id="w-list"><div class="empty">尚無記錄</div></div></div>
+</div>
+
+<!-- 設定 -->
+<div id="sec-settings" class="sec">
+  <div class="rwd2">
+    <div>
+      <div class="card">
+        <div class="ct">100天挑戰設定</div>
+        <div class="sg">
+          <div class="fg"><label>挑戰開始日期</label><input type="date" id="g-start"></div>
+          <div class="fg"><label>每日最低距離 (km)</label><input type="number" value="2" id="g-min" step="0.5"></div>
+          <div class="fg"><label>每日目標距離 (km)</label><input type="number" value="8" id="g-target" step="0.5"></div>
+          <div class="fg"><label>總目標距離 (km)</label><input type="number" value="800" id="g-total"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">心率警戒設定</div>
+        <div class="sg">
+          <div class="fg"><label>Z2 上限（提示降速）</label><input type="number" value="128" id="g-z2"></div>
+          <div class="fg"><label>Z4 警戒（紅色警告）</label><input type="number" value="160" id="g-z4"></div>
+          <div class="fg"><label>目標體重 (kg)</label><input type="number" value="74" id="g-tw" step="0.5"></div>
+          <div class="fg"><label>月跑量目標 (km)</label><input type="number" value="120" id="g-mdist"></div>
+        </div>
+        <button class="btn btn-primary" onclick="saveGoals()" style="margin-top:4px">儲存目標設定</button>
+        <div id="g-saved" class="st st-ok" style="display:none">已儲存 ✓</div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="ct">Google Sheets 同步</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <span id="conn-dot" style="width:9px;height:9px;border-radius:50%;background:var(--text3);display:inline-block;flex-shrink:0"></span>
+          <span id="conn-lbl" style="font-size:13px;color:var(--text3)">未設定</span>
+        </div>
+        <div class="fg" style="margin-bottom:12px"><label>Apps Script URL</label><input type="url" id="sh-url" placeholder="https://script.google.com/macros/s/xxxxx/exec" style="font-size:12px"></div>
+        <div class="btn-row" style="margin-top:0;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="saveCfg()">儲存</button>
+          <button class="btn btn-secondary btn-sm" onclick="syncAll()">備份到 Sheets</button>
+          <button class="btn btn-blue btn-sm" onclick="restoreFromSheets()">從 Sheets 還原</button>
+        </div>
+        <div id="sh-st" class="st"></div>
+        <div style="margin-top:8px;font-size:12px;color:var(--text3)" id="sh-stats">尚未同步</div>
+        <div style="margin-top:10px;background:var(--blue-lt);border-radius:var(--rs);padding:10px 12px;font-size:12px;color:#0c447c;line-height:1.7">每次更新 App 前先點「備份到 Sheets」，更新後若資料遺失可點「從 Sheets 還原」。</div>
+      </div>
+      <div class="card">
+        <div class="ct">匯出資料</div>
+        <div class="btn-row" style="margin-top:0">
+          <button class="btn btn-secondary" onclick="exportCSV()">下載 CSV</button>
+          <button class="btn btn-secondary" onclick="exportXLSX()">下載 Excel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<nav id="nav">
+  <button class="nav-btn active" onclick="sw('challenge')" id="nav-challenge"><i class="ti ti-flame" aria-hidden="true"></i><span>挑戰</span></button>
+  <button class="nav-btn" onclick="sw('log')" id="nav-log"><i class="ti ti-circle-plus" aria-hidden="true"></i><span>記錄</span></button>
+  <button class="nav-btn" onclick="sw('chart')" id="nav-chart"><i class="ti ti-chart-donut" aria-hidden="true"></i><span>圖表</span></button>
+  <button class="nav-btn" onclick="sw('kpi')" id="nav-kpi"><i class="ti ti-target" aria-hidden="true"></i><span>KPI</span></button>
+  <button class="nav-btn" onclick="sw('alert')" id="nav-alert"><i class="ti ti-bell" aria-hidden="true"></i><span>警示</span></button>
+  <button class="nav-btn" onclick="sw('settings')" id="nav-settings"><i class="ti ti-settings" aria-hidden="true"></i><span>設定</span></button>
+</nav>
+</div>
+
+<!-- Edit Sheet -->
+<div id="edit-overlay">
+  <div id="edit-sheet">
+    <div class="sheet-title"><span>編輯記錄</span><button class="sheet-close" onclick="closeEdit()">✕</button></div>
+    <input type="hidden" id="e-id">
+    <div class="form-grid">
+      <div class="fg"><label>日期</label><input type="date" id="e-date"></div>
+      <div class="fg"><label>類型</label><select id="e-type"><option value="run">跑步</option><option value="cycle">騎車</option><option value="swim">游泳</option><option value="other">其他</option></select></div>
+      <div class="fg"><label>距離 (km)</label><input type="number" id="e-dst" min="0" step="0.01" inputmode="decimal"></div>
+      <div class="fg"><label>時間 mm:ss.ms</label><input type="text" id="e-time" inputmode="numeric"></div>
+      <div class="fg"><label>平均心率</label><input type="number" id="e-hra" min="0" inputmode="numeric"></div>
+      <div class="fg"><label>最大心率</label><input type="number" id="e-hrm" min="0" inputmode="numeric"></div>
+      <div class="fg"><label>平均功率 (W)</label><input type="number" id="e-pwa" min="0" inputmode="numeric"></div>
+      <div class="fg"><label>最大功率 (W)</label><input type="number" id="e-pwm" min="0" inputmode="numeric"></div>
+      <div class="fg"><label>熱量 (kcal)</label><input type="number" id="e-cal" min="0" inputmode="numeric"></div>
+      <div class="fg"><label>心率基準</label><input type="number" id="e-hrb" min="100" max="250" value="177" inputmode="numeric"></div>
+      <div class="fg form-full"><label>備註</label><input type="text" id="e-note"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="saveEdit()">儲存修改</button><button class="btn btn-secondary" onclick="closeEdit()">取消</button></div>
+  </div>
+</div>
+
+<!-- Confirm -->
+<div id="confirm-overlay">
+  <div id="confirm-box">
+    <div class="cfm-title" id="cfm-title">確定刪除？</div>
+    <div class="cfm-sub" id="cfm-sub">此操作無法復原</div>
+    <div class="cfm-btns"><button class="btn btn-secondary" onclick="confirmNo()">取消</button><button class="btn btn-danger" onclick="confirmYes()">刪除</button></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ── 資料遷移 ───────────────────────────────────────────
+const KEYS={logs:'r100v6_logs',wts:'r100v6_wts',url:'r100v6_url',goals:'r100v6_goals'};
+const OLD=[
+  {logs:'r100v5_logs',wts:'r100v5_wts',url:'r100v5_url'},
+  {logs:'r100v4_logs',wts:'r100v4_wts',url:'r100v4_url'},
+  {logs:'r100v3_logs',wts:'r100v3_wts',url:'r100v3_url'},
+  {logs:'r100v2_logs',wts:'r100v2_wts',url:'r100v2_url'},
+  {logs:'ft4_logs',wts:'ft4_wts',url:'ft4_url'},
+  {logs:'ft3_logs',wts:'ft3_wts',url:'ft3_url'},
+  {logs:'ft2_logs',wts:'ft2_wts',url:''},
+  {logs:'ft_logs',wts:'ft_weights',url:''},
+];
+function migrate(){
+  if(localStorage.getItem(KEYS.logs))return;
+  for(const ok of OLD){
+    const l=localStorage.getItem(ok.logs);
+    if(l){localStorage.setItem(KEYS.logs,l);const w=localStorage.getItem(ok.wts);if(w)localStorage.setItem(KEYS.wts,w);const u=ok.url?localStorage.getItem(ok.url):'';if(u)localStorage.setItem(KEYS.url,u);return;}
+  }
+}
+migrate();
+
+// ── State ──────────────────────────────────────────────
+let logs=[],weights=[],shUrl='',charts={},confirmCb=null,currentMetric='dist',currentPeriod=0,deferredPrompt=null;
+const DEFAULT_GOALS={start:'',minDist:2,targetDist:8,totalDist:800,z2:128,z4:160,tw:74,mdist:120};
+let goals={...DEFAULT_GOALS};
+
+try{logs=JSON.parse(localStorage.getItem(KEYS.logs)||'[]');}catch(e){logs=[];}
+try{weights=JSON.parse(localStorage.getItem(KEYS.wts)||'[]');}catch(e){weights=[];}
+try{shUrl=localStorage.getItem(KEYS.url)||'';}catch(e){}
+try{const g=JSON.parse(localStorage.getItem(KEYS.goals)||'{}');goals={...DEFAULT_GOALS,...g};}catch(e){}
+
+function save(){localStorage.setItem(KEYS.logs,JSON.stringify(logs));localStorage.setItem(KEYS.wts,JSON.stringify(weights));}
+function saveGoalStore(){localStorage.setItem(KEYS.goals,JSON.stringify(goals));}
+function today(){return new Date().toISOString().split('T')[0];}
+function dayDiff(a,b){return Math.round((new Date(b)-new Date(a))/86400000);}
+
+// ── UI helpers ─────────────────────────────────────────
+function toast(msg,dur=2400){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function showSt(id,type,msg){const el=document.getElementById(id);el.className='st st-'+type;el.textContent=msg;if(type==='ok')setTimeout(()=>{el.className='st';},3000);}
+function confirm2(title,sub,cb){document.getElementById('cfm-title').textContent=title;document.getElementById('cfm-sub').textContent=sub;confirmCb=cb;document.getElementById('confirm-overlay').classList.add('show');}
+function confirmYes(){document.getElementById('confirm-overlay').classList.remove('show');if(confirmCb)confirmCb();confirmCb=null;}
+function confirmNo(){document.getElementById('confirm-overlay').classList.remove('show');confirmCb=null;}
+function setBadge(c){const t=c?'☁ 已連線':'超慢跑挑戰';['hdr-badge','sb-badge'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=t;});}
+
+// ── Time utils ─────────────────────────────────────────
+function parseTime(s){
+  if(!s)return 0;
+  let m=s.match(/^(\d{1,3}):(\d{2})(?:\.(\d{1,3}))?$/);
+  if(m)return parseInt(m[1])*60+parseInt(m[2])+(m[3]?parseInt(m[3].padEnd(3,'0'))/1000:0);
+  m=s.match(/^(\d{1,2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?$/);
+  if(m)return parseInt(m[1])*3600+parseInt(m[2])*60+parseInt(m[3])+(m[4]?parseInt(m[4].padEnd(3,'0'))/1000:0);
+  return 0;
+}
+function fmtTime(s){if(!s)return '—';const m=Math.floor(s/60),sc=Math.floor(s%60),ms=Math.round((s%1)*1000);return `${m}:${String(sc).padStart(2,'0')}.${String(ms).padStart(3,'0')}`;}
+function fmtHM(s){return `${Math.floor(s/3600)}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}`;}
+function calcPace(d,s){if(!d||!s)return null;const spk=s/d;return{min:Math.floor(spk/60),sec:Math.round(spk%60),total:spk};}
+function fmtPace(p){return p?`${p.min}:${String(p.sec).padStart(2,'0')}`:'—';}
+function calcZone(hr,base){
+  if(!hr||!base)return null;const p=hr/base;
+  if(p>=0.9)return{name:'Z5 最大',aero:10,anaero:90};if(p>=0.8)return{name:'Z4 閾值',aero:35,anaero:65};
+  if(p>=0.7)return{name:'Z3 有氧',aero:65,anaero:35};if(p>=0.6)return{name:'Z2 基礎',aero:85,anaero:15};
+  return{name:'Z1 恢復',aero:95,anaero:5};
+}
+
+// ── Live calc ──────────────────────────────────────────
+function liveCalc(){
+  const d=parseFloat(document.getElementById('f-dst').value)||0;
+  const s=parseTime(document.getElementById('f-time').value);
+  const hr=parseFloat(document.getElementById('f-hra').value)||0;
+  const base=parseFloat(document.getElementById('f-hrb').value)||177;
+  const box=document.getElementById('ac-box');
+  if(!d&&!s&&!hr){box.style.display='none';return;}
+  box.style.display='block';
+  document.getElementById('ac-p').textContent=fmtPace(calcPace(d,s));
+  const z=calcZone(hr,base);
+  document.getElementById('ac-z').textContent=z?z.name:'—';
+  document.getElementById('ac-a').textContent=z?z.aero+'%':'—';
+  document.getElementById('ac-n').textContent=z?z.anaero+'%':'—';
+  // HR警示
+  if(hr>0&&hr>goals.z4){toast('⚠ 心率超過 Z4 警戒值 '+goals.z4+'bpm！');}
+  else if(hr>0&&hr>goals.z2){toast('心率超過 Z2 上限，建議降速');}
+}
+['f-dst','f-time','f-hra','f-hrb'].forEach(id=>document.getElementById(id).addEventListener('input',liveCalc));
+
+// ── Entry CRUD ─────────────────────────────────────────
+function buildEntry(px){
+  const dist=parseFloat(document.getElementById(px+'-dst').value)||0;
+  const sec=parseTime(document.getElementById(px+'-time').value);
+  const hrAvg=parseFloat(document.getElementById(px+'-hra').value)||0;
+  const hrMax=parseFloat(document.getElementById(px+'-hrm').value)||0;
+  const pwAvg=parseFloat(document.getElementById(px+'-pwa').value)||0;
+  const pwMax=parseFloat(document.getElementById(px+'-pwm').value)||0;
+  const base=parseFloat(document.getElementById(px+'-hrb').value)||177;
+  const z=calcZone(hrAvg,base);
+  return{date:document.getElementById(px+'-date').value,type:document.getElementById(px+'-type').value,
+    dist,sec,hrAvg,hrMax,pwAvg,pwMax,cal:parseFloat(document.getElementById(px+'-cal').value)||0,
+    note:document.getElementById(px+'-note').value,zone:z,pace:calcPace(dist,sec),
+    aeroMin:z&&sec?Math.round(sec/60*z.aero/100):0,anaeroMin:z&&sec?Math.round(sec/60*z.anaero/100):0};
+}
+function addEntry(){
+  const e={id:Date.now(),...buildEntry('f')};
+  if(!e.date){toast('請選擇日期');return;}
+  logs.push(e);logs.sort((a,b)=>a.date.localeCompare(b.date));
+  save();renderSummary();renderChallenge();
+  if(shUrl)syncEntry(e);
+  ['f-dst','f-time','f-hra','f-hrm','f-pwa','f-pwm','f-cal','f-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-date').value=today();document.getElementById('ac-box').style.display='none';
+  toast('記錄已儲存 ✓');
+}
+function openEdit(id){
+  const e=logs.find(l=>l.id===id);if(!e)return;
+  document.getElementById('e-id').value=id;
+  document.getElementById('e-date').value=e.date;document.getElementById('e-type').value=e.type;
+  document.getElementById('e-dst').value=e.dist||'';document.getElementById('e-time').value=e.sec?fmtTime(e.sec):'';
+  document.getElementById('e-hra').value=e.hrAvg||'';document.getElementById('e-hrm').value=e.hrMax||'';
+  document.getElementById('e-pwa').value=e.pwAvg||'';document.getElementById('e-pwm').value=e.pwMax||'';
+  document.getElementById('e-cal').value=e.cal||'';document.getElementById('e-hrb').value=177;document.getElementById('e-note').value=e.note||'';
+  document.getElementById('edit-overlay').classList.add('show');
+}
+function closeEdit(){document.getElementById('edit-overlay').classList.remove('show');}
+function saveEdit(){
+  const id=parseInt(document.getElementById('e-id').value);const idx=logs.findIndex(l=>l.id===id);if(idx<0)return;
+  const u={id,...buildEntry('e')};if(!u.date){toast('請選擇日期');return;}
+  logs[idx]=u;logs.sort((a,b)=>a.date.localeCompare(b.date));
+  save();renderHistory();renderSummary();renderChallenge();closeEdit();toast('已修改 ✓');
+}
+function delEntry(id){
+  const e=logs.find(l=>l.id===id);
+  confirm2('確定刪除？',e?e.date+' '+tLbl[e.type]:'',()=>{logs=logs.filter(l=>l.id!==id);save();renderHistory();renderSummary();renderChallenge();toast('已刪除');});
+}
+
+// ── Goals ─────────────────────────────────────────────
+function saveGoals(){
+  goals.start=document.getElementById('g-start').value;
+  goals.minDist=parseFloat(document.getElementById('g-min').value)||2;
+  goals.targetDist=parseFloat(document.getElementById('g-target').value)||8;
+  goals.totalDist=parseFloat(document.getElementById('g-total').value)||800;
+  goals.z2=parseFloat(document.getElementById('g-z2').value)||128;
+  goals.z4=parseFloat(document.getElementById('g-z4').value)||160;
+  goals.tw=parseFloat(document.getElementById('g-tw').value)||74;
+  goals.mdist=parseFloat(document.getElementById('g-mdist').value)||120;
+  saveGoalStore();renderChallenge();
+  document.getElementById('g-saved').style.display='block';
+  setTimeout(()=>document.getElementById('g-saved').style.display='none',2500);
+  toast('目標設定已儲存 ✓');
+}
+function loadGoalInputs(){
+  document.getElementById('g-start').value=goals.start||today();
+  document.getElementById('g-min').value=goals.minDist;
+  document.getElementById('g-target').value=goals.targetDist;
+  document.getElementById('g-total').value=goals.totalDist;
+  document.getElementById('g-z2').value=goals.z2;
+  document.getElementById('g-z4').value=goals.z4;
+  document.getElementById('g-tw').value=goals.tw;
+  document.getElementById('g-mdist').value=goals.mdist;
+}
+
+// ── Challenge ──────────────────────────────────────────
+function renderChallenge(){
+  const startStr=goals.start||today();
+  const startDate=new Date(startStr);
+  const nowDate=new Date(today());
+  const daysPassed=Math.max(0,Math.min(100,dayDiff(startStr,today())+1));
+  const remain=Math.max(0,100-daysPassed);
+  const totalDist=logs.reduce((s,l)=>s+l.dist,0);
+  const pct=Math.min(daysPassed,100);
+  const dpct=Math.min(Math.round(totalDist/goals.totalDist*100),100);
+  document.getElementById('ch-day').textContent=daysPassed;
+  document.getElementById('ch-dist').textContent=totalDist.toFixed(1);
+  document.getElementById('ch-goal-dist').textContent=goals.totalDist;
+  document.getElementById('ch-remain').textContent=remain;
+  document.getElementById('ch-pct').textContent=pct+'%';
+  document.getElementById('ch-dpct').textContent=dpct+'%';
+  document.getElementById('ch-bar').style.width=pct+'%';
+  document.getElementById('ch-dbar').style.width=dpct+'%';
+  const todayLogs=logs.filter(l=>l.date===today());
+  const todayDist=todayLogs.reduce((s,l)=>s+l.dist,0);
+  const todayDone=todayDist>=goals.minDist;
+  document.getElementById('ch-today-st').textContent=todayDone?'✓':'✗';
+  document.getElementById('ch-today-st').style.color=todayDone?'var(--green)':'var(--red)';
+  document.getElementById('ch-today-sub').textContent=todayDone?todayDist.toFixed(1)+'km':'未達標';
+
+  if(charts['c-challenge'])charts['c-challenge'].destroy();
+  charts['c-challenge']=new Chart(document.getElementById('c-challenge'),{
+    type:'doughnut',data:{datasets:[{data:[pct,100-pct],backgroundColor:['#ff9500','rgba(128,128,128,0.1)'],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:true,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{duration:600}}
+  });
+
+  // 100-day calendar
+  const grid=document.getElementById('cal-100');grid.innerHTML='';
+  const trainedDates=new Set(logs.map(l=>l.date));
+  for(let i=1;i<=100;i++){
+    const el=document.createElement('div');el.className='c100';el.textContent=i;
+    const d=new Date(startDate);d.setDate(startDate.getDate()+i-1);
+    const ds=d.toISOString().split('T')[0];
+    const isToday=ds===today();const isPast=d<=nowDate;const hasTrain=trainedDates.has(ds);
+    if(!isPast)el.className='c100 c-future';
+    else if(isToday&&hasTrain)el.className='c100 c-today';
+    else if(hasTrain)el.className='c100 c-done';
+    else el.className='c100 c-miss';
+    grid.appendChild(el);
+  }
+  renderStreak();
+}
+
+// ── Streak & Heatmap ───────────────────────────────────
+function getStreaks(){
+  const dates=[...new Set(logs.map(l=>l.date))].sort();
+  if(!dates.length)return{cur:0,best:0};
+  const runs=[];let start=dates[0],len=1;
+  for(let i=1;i<dates.length;i++){if(dayDiff(dates[i-1],dates[i])===1)len++;else{runs.push({start,end:dates[i-1],days:len});start=dates[i];len=1;}}
+  runs.push({start,end:dates[dates.length-1],days:len});
+  const best=Math.max(...runs.map(r=>r.days));
+  const cur=dayDiff(dates[dates.length-1],today())<=1?runs[runs.length-1].days:0;
+  return{cur,best};
+}
+function renderStreak(){
+  const{cur,best}=getStreaks();
+  const dates=[...new Set(logs.map(l=>l.date))];
+  document.getElementById('sk-cur').textContent=cur;
+  document.getElementById('sk-best').textContent=best;
+  document.getElementById('sk-total').textContent=dates.length;
+  const m0=new Date();m0.setDate(1);
+  document.getElementById('sk-month').textContent=dates.filter(d=>d>=m0.toISOString().split('T')[0]).length;
+  const s=new Date();s.setDate(s.getDate()-182);
+  const allD=[];for(let d=new Date(s);d<=new Date();d.setDate(d.getDate()+1))allD.push(d.toISOString().split('T')[0]);
+  document.getElementById('sk-rate').textContent=allD.length?Math.round(dates.filter(d=>d>=s.toISOString().split('T')[0]).length/allD.length*100):0;
+  renderHeatmap(dates);
+}
+function renderHeatmap(dates){
+  const cntMap={};logs.forEach(l=>{cntMap[l.date]=(cntMap[l.date]||0)+1;});
+  const weeks=26,cells=weeks*7;
+  const startD=new Date();startD.setDate(startD.getDate()-(cells-1));
+  const allDays=[];for(let d=new Date(startD);d<=new Date();d.setDate(d.getDate()+1))allDays.push(d.toISOString().split('T')[0]);
+  const cols=Array.from({length:weeks},()=>[]);allDays.forEach((d,i)=>cols[Math.floor(i/7)].push(d));
+  const mEl=document.getElementById('hm-months'),gEl=document.getElementById('hm-grid');mEl.innerHTML='';gEl.innerHTML='';let lastM='';
+  cols.forEach(col=>{
+    const m=col[0]?col[0].slice(5,7):'';
+    const lbl=document.createElement('div');lbl.className='hm-mlbl';lbl.textContent=(m!==lastM)?(['','1','2','3','4','5','6','7','8','9','10','11','12'][parseInt(m)]||''):'';if(m!==lastM)lastM=m;mEl.appendChild(lbl);
+    const colDiv=document.createElement('div');colDiv.className='hm-col';
+    col.forEach(d=>{const cell=document.createElement('div');cell.className='hm-cell';const c=cntMap[d]||0;cell.style.background=c===0?'var(--bg)':c===1?'#ffcc80':c===2?'#ffa040':'#ff9500';cell.title=d+(c?` (${c}次)`:'');colDiv.appendChild(cell);});
+    gEl.appendChild(colDiv);
+  });
+}
+
+// ── Summary ────────────────────────────────────────────
+function renderSummary(){
+  const now=new Date(),ws=new Date(now);ws.setDate(now.getDate()-now.getDay()+1);
+  const wk=logs.filter(l=>l.date>=ws.toISOString().split('T')[0]);
+  document.getElementById('sm-cnt').textContent=wk.length;
+  document.getElementById('sm-dst').textContent=wk.reduce((s,l)=>s+l.dist,0).toFixed(1);
+  document.getElementById('sm-tm').textContent=fmtHM(wk.reduce((s,l)=>s+l.sec,0));
+  document.getElementById('sm-cal').textContent=Math.round(wk.reduce((s,l)=>s+l.cal,0));
+}
+
+// ── History ────────────────────────────────────────────
+const tLbl={run:'跑步',cycle:'騎車',swim:'游泳',other:'其他'};
+const tIcon={run:'🏃',cycle:'🚴',swim:'🏊',other:'⚡'};
+const tColor={run:'#fff3e0',cycle:'#e8f5e9',swim:'#e3f2fd',other:'#f3e5f5'};
+function renderHistory(){
+  const el=document.getElementById('log-list');
+  if(!logs.length){el.innerHTML='<div class="empty">尚無記錄</div>';renderPR();return;}
+  el.innerHTML=[...logs].reverse().map(l=>{
+    const p=l.pace?fmtPace(l.pace)+'/km':'';
+    const hr=l.hrAvg?`HR ${l.hrAvg}/${l.hrMax||'—'}bpm`:'';
+    const pw=l.pwAvg?`${l.pwAvg}/${l.pwMax||'—'}W`:'';
+    const hrAlert=l.hrAvg>goals.z4?'⚠':l.hrAvg>goals.z2?'↑':'';
+    return`<div class="log-item">
+      <div class="log-icon" style="background:${tColor[l.type]||tColor.other}">${tIcon[l.type]||'⚡'}</div>
+      <div class="log-body">
+        <div class="log-date">${l.date} <span style="font-size:11px;color:var(--text3)">${tLbl[l.type]}</span>${hrAlert?`<span style="font-size:11px;color:${l.hrAvg>goals.z4?'var(--red)':'var(--accent)'};margin-left:4px">${hrAlert}</span>`:''}</div>
+        <div class="log-meta">${l.dist?l.dist+'km ':''} ${l.sec?fmtTime(l.sec)+' ':''} ${p}<br>${hr}${hr&&pw?' · ':''}${pw}</div>
+      </div>
+      <div class="log-acts">
+        <button class="icon-btn" onclick="openEdit(${l.id})" aria-label="編輯"><i class="ti ti-edit" style="font-size:14px"></i></button>
+        <button class="icon-btn icon-btn-del" onclick="delEntry(${l.id})" aria-label="刪除"><i class="ti ti-trash" style="font-size:14px"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+  renderPR();
+}
+function renderPR(){
+  const el=document.getElementById('pr-grid');if(!logs.length){el.innerHTML='<div class="empty">尚無PR</div>';return;}
+  const items=[];
+  ['run','cycle','swim','other'].forEach(t=>{
+    const f=logs.filter(l=>l.type===t&&l.dist>0);if(f.length){const b=f.reduce((a,c)=>a.dist>c.dist?a:c);items.push({lbl:tLbl[t]+' 最遠',val:b.dist+'km',date:b.date});}
+    const fp=logs.filter(l=>l.type===t&&l.pace&&l.dist>=1);if(fp.length){const b=fp.reduce((a,c)=>a.pace.total<c.pace.total?a:c);items.push({lbl:tLbl[t]+' 最快',val:fmtPace(b.pace)+'/km',date:b.date});}
+  });
+  const hm=logs.filter(l=>l.hrMax>0);if(hm.length){const b=hm.reduce((a,c)=>a.hrMax>c.hrMax?a:c);items.push({lbl:'最高心率',val:b.hrMax+'bpm',date:b.date});}
+  const pm=logs.filter(l=>l.pwMax>0);if(pm.length){const b=pm.reduce((a,c)=>a.pwMax>c.pwMax?a:c);items.push({lbl:'最高功率',val:b.pwMax+'W',date:b.date});}
+  el.innerHTML=items.map(i=>`<div class="pr-c"><div class="pr-lbl">${i.lbl}</div><div class="pr-val">${i.val}</div><div class="pr-dt">${i.date}</div></div>`).join('')||'<div class="empty">尚無PR</div>';
+}
+
+// ── Chart ──────────────────────────────────────────────
+const TRACK='rgba(128,128,128,0.08)';
+function getSlice(period){
+  if(!period)return[...logs].sort((a,b)=>a.date.localeCompare(b.date));
+  const cut=new Date();cut.setDate(cut.getDate()-period);const cs=cut.toISOString().split('T')[0];
+  return logs.filter(d=>d.date>=cs).sort((a,b)=>a.date.localeCompare(b.date));
+}
+function calcRing(slice){
+  if(!slice.length)return{dist:0,hr:0,pw:0,aero:0};
+  const dist=+slice.reduce((s,l)=>s+l.dist,0).toFixed(1);
+  const hrArr=slice.filter(l=>l.hrAvg>0);const pwArr=slice.filter(l=>l.pwAvg>0);const aeArr=slice.filter(l=>(l.aeroMin||0)+(l.anaeroMin||0)>0);
+  const hr=hrArr.length?Math.round(hrArr.reduce((s,l)=>s+l.hrAvg,0)/hrArr.length):0;
+  const pw=pwArr.length?Math.round(pwArr.reduce((s,l)=>s+l.pwAvg,0)/pwArr.length):0;
+  const aero=aeArr.length?Math.round(aeArr.reduce((s,l)=>s+l.aeroMin/(l.aeroMin+l.anaeroMin)*100,0)/aeArr.length):0;
+  return{dist,hr,pw,aero};
+}
+function updateRing(slice,label){
+  const{dist,hr,pw,aero}=calcRing(slice);
+  const maxD=Math.max(goals.totalDist,dist*1.2);
+  const dp=Math.min(dist/maxD*100,100);const hp=hr?Math.min((hr-100)/100*100,100):0;const pp=pw?Math.min(pw/400*100,100):0;const ap=aero||0;
+  document.getElementById('rc-date').textContent=label;document.getElementById('rc-val').textContent=dist;
+  document.getElementById('rm-dist').textContent=dist+'km';document.getElementById('rm-hr').textContent=hr?hr+'bpm':'—';document.getElementById('rm-pw').textContent=pw?pw+'W':'—';document.getElementById('rm-aero').textContent=aero?aero+'%':'—';
+  document.getElementById('rb-dist').style.width=dp+'%';document.getElementById('rb-hr').style.width=hp+'%';document.getElementById('rb-pw').style.width=pp+'%';document.getElementById('rb-aero').style.width=ap+'%';
+  if(charts['c-ring']){[[0,dp],[1,hp],[2,pp],[3,ap]].forEach(([i,v])=>{charts['c-ring'].data.datasets[i].data=[v,100-v];});charts['c-ring'].update('none');}
+  document.querySelectorAll('.pchip').forEach((el,i)=>el.classList.toggle('active',[7,30,90,0][i]===currentPeriod));
+}
+function buildPeriodChips(){
+  const row=document.getElementById('period-chips');row.innerHTML='';
+  [{label:'近7天',p:7},{label:'近30天',p:30},{label:'近90天',p:90},{label:'全部',p:0}].forEach(({label,p})=>{
+    const c=document.createElement('div');c.className='pchip'+(p===currentPeriod?' active':'');c.textContent=label;
+    c.onclick=()=>{currentPeriod=p;updateRing(getSlice(p),label);drawTrend(currentMetric);};row.appendChild(c);
+  });
+}
+function setMetric(m,el){
+  currentMetric=m;document.querySelectorAll('.mt').forEach(t=>t.classList.remove('active'));el.classList.add('active');drawTrend(m);
+}
+function drawTrend(m){
+  const slice=getSlice(currentPeriod);
+  const cfg={
+    dist:{data:slice.map(l=>+l.dist.toFixed(2)),color:'#ff9500',bg:'rgba(255,149,0,0.1)',fmt:v=>v.toFixed(1)+'km',rev:false},
+    hr:{data:slice.map(l=>l.hrAvg||null),color:'#30d158',bg:'rgba(48,209,88,0.1)',fmt:v=>Math.round(v)+'bpm',rev:false},
+    pw:{data:slice.map(l=>l.pwAvg||null),color:'#0a84ff',bg:'rgba(10,132,255,0.1)',fmt:v=>Math.round(v)+'W',rev:false},
+    pace:{data:slice.map(l=>l.pace?+(l.pace.total/60).toFixed(2):null),color:'#bf5af2',bg:'rgba(191,90,242,0.1)',fmt:v=>{const mm=Math.floor(v),ss=Math.round((v-mm)*60);return mm+':'+String(ss).padStart(2,'0');},rev:true}
+  }[m];
+  const labels=slice.map((l,i)=>{if(slice.length<=14)return l.date.slice(5);if(slice.length<=31)return i%3===0?l.date.slice(5):'';return i%7===0?l.date.slice(5):'';});
+  if(charts['c-trend'])charts['c-trend'].destroy();
+  charts['c-trend']=new Chart(document.getElementById('c-trend'),{type:'line',
+    data:{labels,datasets:[{data:cfg.data,borderColor:cfg.color,backgroundColor:cfg.bg,tension:0.4,fill:true,pointRadius:2,borderWidth:2,spanGaps:true}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>cfg.fmt(ctx.parsed.y)}}},
+      scales:{y:{beginAtZero:false,reverse:cfg.rev,ticks:{font:{size:10},color:'#8e8e93',callback:v=>cfg.fmt(v)},grid:{color:'rgba(128,128,128,0.08)'}},x:{ticks:{font:{size:10},color:'#8e8e93',maxRotation:0},grid:{display:false}}}}
+  });
+}
+function initRingChart(){
+  if(charts['c-ring'])charts['c-ring'].destroy();
+  charts['c-ring']=new Chart(document.getElementById('c-ring'),{type:'doughnut',
+    data:{datasets:[{data:[0,100],backgroundColor:['#ff9500',TRACK],borderWidth:0,weight:1.2},{data:[0,100],backgroundColor:['#30d158',TRACK],borderWidth:0,weight:1.2},{data:[0,100],backgroundColor:['#0a84ff',TRACK],borderWidth:0,weight:1.2},{data:[0,100],backgroundColor:['#bf5af2',TRACK],borderWidth:0,weight:1.2}]},
+    options:{responsive:true,maintainAspectRatio:true,cutout:'20%',plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{duration:350}}
+  });
+  buildPeriodChips();updateRing(getSlice(currentPeriod),'全部');drawTrend(currentMetric);
+  if(weights.length)renderWtChart();
+}
+function renderWtChart(){
+  if(charts['c-wt'])charts['c-wt'].destroy();
+  if(!weights.length)return;
+  charts['c-wt']=new Chart(document.getElementById('c-wt'),{type:'line',
+    data:{labels:weights.map(w=>w.date.slice(5)),datasets:[{data:weights.map(w=>w.val),borderColor:'#30d158',backgroundColor:'rgba(48,209,88,0.1)',tension:0.4,fill:true,pointRadius:3,borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:10},color:'#8e8e93'}},x:{ticks:{font:{size:10},color:'#8e8e93',maxRotation:45,autoSkip:true,maxTicksLimit:10}}}}});
+}
+
+// ── KPI ───────────────────────────────────────────────
+function renderKPI(){
+  const now=new Date(),ws=new Date(now);ws.setDate(now.getDate()-now.getDay()+1);
+  const wk=logs.filter(l=>l.date>=ws.toISOString().split('T')[0]);
+  const wDist=wk.reduce((s,l)=>s+l.dist,0);const wCnt=wk.length;
+  const wHrArr=wk.filter(l=>l.hrAvg>0);const wHr=wHrArr.length?Math.round(wHrArr.reduce((s,l)=>s+l.hrAvg,0)/wHrArr.length):0;
+  const wZ2=wHrArr.length?Math.round(wHrArr.filter(l=>l.hrAvg<=goals.z2).length/wHrArr.length*100):0;
+  const mg=document.getElementById('kpi-week-mg');
+  mg.innerHTML=`<div class="mc"><div class="mc-l">本週跑量</div><div class="mc-v" style="color:${wDist>=30?'var(--green)':'var(--text)'}">${wDist.toFixed(1)}</div><div class="mc-u">km / 目標 30</div></div>
+    <div class="mc"><div class="mc-l">訓練次數</div><div class="mc-v">${wCnt}</div><div class="mc-u">次</div></div>
+    <div class="mc"><div class="mc-l">平均心率</div><div class="mc-v" style="color:${wHr>goals.z2?'var(--accent)':wHr>goals.z4?'var(--red)':'var(--green)'}">${wHr||'—'}</div><div class="mc-u">bpm</div></div>
+    <div class="mc"><div class="mc-l">Z2 達標率</div><div class="mc-v" style="color:${wZ2>=70?'var(--green)':'var(--accent)'}">${wZ2}</div><div class="mc-u">%</div></div>`;
+
+  const totalDist=logs.reduce((s,l)=>s+l.dist,0);
+  const allHrArr=logs.filter(l=>l.hrAvg>0);
+  const allZ2=allHrArr.length?Math.round(allHrArr.filter(l=>l.hrAvg<=goals.z2).length/allHrArr.length*100):0;
+  const allAero=logs.filter(l=>l.aeroMin||l.anaeroMin);
+  const aeroAvg=allAero.length?Math.round(allAero.reduce((s,l)=>s+l.aeroMin/(l.aeroMin+l.anaeroMin)*100,0)/allAero.length):0;
+  const daysDone=new Set(logs.map(l=>l.date)).size;
+  const startStr=goals.start||today();
+  const totalDays=Math.max(1,Math.min(100,dayDiff(startStr,today())+1));
+  const dp=Math.min(totalDist/goals.totalDist*100,100);const hp=allZ2;const ap=aeroAvg;const dayp=Math.min(daysDone/totalDays*100,100);
+  const overall=Math.round((dp+hp+ap+dayp)/4);
+  document.getElementById('kpi-pct').textContent=overall+'%';
+  document.getElementById('kpi-dist').textContent=totalDist.toFixed(1)+' / '+goals.totalDist+'km';
+  document.getElementById('kpi-hr').textContent=allZ2+'%（目標≥70%）';
+  document.getElementById('kpi-aero').textContent=aeroAvg+'%（目標≥70%）';
+  document.getElementById('kpi-days').textContent=daysDone+' / '+totalDays+'天';
+  document.getElementById('kpib-dist').style.width=dp+'%';document.getElementById('kpib-hr').style.width=hp+'%';document.getElementById('kpib-aero').style.width=ap+'%';document.getElementById('kpib-days').style.width=dayp+'%';
+  if(charts['c-kpi-ring'])charts['c-kpi-ring'].destroy();
+  charts['c-kpi-ring']=new Chart(document.getElementById('c-kpi-ring'),{type:'doughnut',
+    data:{datasets:[{data:[dp,100-dp],backgroundColor:['#ff9500',TRACK],borderWidth:0,weight:1.2},{data:[hp,100-hp],backgroundColor:['#30d158',TRACK],borderWidth:0,weight:1.2},{data:[ap,100-ap],backgroundColor:['#0a84ff',TRACK],borderWidth:0,weight:1.2},{data:[dayp,100-dayp],backgroundColor:['#bf5af2',TRACK],borderWidth:0,weight:1.2}]},
+    options:{responsive:true,maintainAspectRatio:true,cutout:'20%',plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{duration:400}}
+  });
+  const now2=new Date();const m0=new Date(now2.getFullYear(),now2.getMonth(),1).toISOString().split('T')[0];
+  const monthDist=logs.filter(l=>l.date>=m0).reduce((s,l)=>s+l.dist,0);
+  const yearDist=totalDist;const yearGoal=goals.mdist*12;
+  const lp=document.getElementById('kpi-long-prog');
+  lp.innerHTML=[
+    {label:'本月跑量',val:monthDist.toFixed(1),target:goals.mdist,unit:'km',color:'#ff9500'},
+    {label:'年度累積',val:yearDist.toFixed(1),target:yearGoal,unit:'km',color:'#0a84ff'},
+    {label:'目標體重',val:weights.length?weights[weights.length-1].val.toFixed(1):'—',target:goals.tw,unit:'kg',color:'#30d158'},
+  ].map(p=>{
+    const pct=p.val!=='—'?Math.min(Math.round(p.val/p.target*100),150):0;
+    return`<div class="pr"><div class="pr-hdr"><span class="pr-l">${p.label}</span><span class="pr-v">${p.val} / ${p.target}${p.unit} <span style="color:${pct>=100?'var(--green)':'var(--accent)'}">${pct}%</span></span></div><div class="pr-track"><div class="pr-bar" style="width:${Math.min(pct,100)}%;background:${p.color}"></div></div></div>`;
+  }).join('');
+}
+
+// ── Alert ─────────────────────────────────────────────
+function renderAlert(){
+  const alerts=[];
+  const todayLogs=logs.filter(l=>l.date===today());
+  const todayDist=todayLogs.reduce((s,l)=>s+l.dist,0);
+  const todayHr=todayLogs.filter(l=>l.hrAvg>0).map(l=>l.hrAvg);
+  const avgTodayHr=todayHr.length?Math.round(todayHr.reduce((a,b)=>a+b,0)/todayHr.length):0;
+  if(todayDist>=goals.minDist)alerts.push({level:'green',title:'今日達標',sub:`${todayDist.toFixed(1)} km 已完成，超慢跑挑戰繼續`,badge:'達標'});
+  else alerts.push({level:'orange',title:'今日尚未達標',sub:`最低門檻 ${goals.minDist} km，目前 ${todayDist.toFixed(1)} km`,badge:'提醒'});
+  if(avgTodayHr>goals.z4)alerts.push({level:'red',title:'心率超過 Z4 警戒值',sub:`平均 ${avgTodayHr} bpm 超過 ${goals.z4} bpm，請立即降速或停止`,badge:'警告'});
+  else if(avgTodayHr>goals.z2)alerts.push({level:'orange',title:'心率超過 Z2 上限',sub:`平均 ${avgTodayHr} bpm，超慢跑目標 ≤ ${goals.z2} bpm，建議降速`,badge:'注意'});
+  else if(avgTodayHr>0)alerts.push({level:'blue',title:'心率控制良好',sub:`今日平均 ${avgTodayHr} bpm，在 Z2 範圍內`,badge:'Z2'});
+  const{cur}=getStreaks();
+  if(cur>=7)alerts.push({level:'green',title:`連續 ${cur} 天不中斷`,sub:'超慢跑習慣正在建立，繼續保持！',badge:'堅持中'});
+  if(cur===0)alerts.push({level:'red',title:'連續天數中斷',sub:'今日記得完成至少 '+goals.minDist+' km',badge:'需注意'});
+  const allHrArr=logs.filter(l=>l.hrAvg>0);
+  const z4count=allHrArr.filter(l=>l.hrAvg>goals.z4).length;
+  if(z4count>0)alerts.push({level:'orange',title:`累積 ${z4count} 次心率超標`,sub:'建議檢視訓練強度，維持 Z2 超慢跑配速',badge:'提醒'});
+  const el=document.getElementById('alert-list');
+  if(!alerts.length){el.innerHTML='<div class="empty">暫無警示</div>';return;}
+  const ic={red:'ti-alert-triangle',orange:'ti-info-circle',green:'ti-check',blue:'ti-heart'};
+  const ac={red:'ai-red',orange:'ai-orange',green:'ai-green',blue:'ai-blue'};
+  const bc={red:'b-red',orange:'b-orange',green:'b-green',blue:'b-blue'};
+  el.innerHTML=alerts.map(a=>`<div class="al-item"><div class="al-icon ${ac[a.level]}"><i class="ti ${ic[a.level]}" aria-hidden="true"></i></div><div><div class="al-title">${a.title}<span class="badge ${bc[a.level]}">${a.badge}</span></div><div class="al-sub">${a.sub}</div></div></div>`).join('');
+
+  const z2pct=allHrArr.length?Math.round(allHrArr.filter(l=>l.hrAvg<=goals.z2).length/allHrArr.length*100):0;
+  const z3pct=allHrArr.length?Math.round(allHrArr.filter(l=>l.hrAvg>goals.z2&&l.hrAvg<=goals.z4).length/allHrArr.length*100):0;
+  const z4pct=allHrArr.length?Math.round(allHrArr.filter(l=>l.hrAvg>goals.z4).length/allHrArr.length*100):0;
+  document.getElementById('z2-monitor').innerHTML=`
+    <div class="pr"><div class="pr-hdr"><span class="pr-l">Z2 以內（≤${goals.z2}bpm）</span><span class="pr-v" style="color:var(--green)">${z2pct}%</span></div><div class="pr-track"><div class="pr-bar" style="width:${z2pct}%;background:var(--green)"></div></div></div>
+    <div class="pr"><div class="pr-hdr"><span class="pr-l">Z3（需降速）</span><span class="pr-v" style="color:var(--accent)">${z3pct}%</span></div><div class="pr-track"><div class="pr-bar" style="width:${z3pct}%;background:var(--accent)"></div></div></div>
+    <div class="pr"><div class="pr-hdr"><span class="pr-l">Z4 以上（${goals.z4}bpm+）</span><span class="pr-v" style="color:var(--red)">${z4pct}%</span></div><div class="pr-track"><div class="pr-bar" style="width:${z4pct}%;background:var(--red)"></div></div></div>`;
+}
+
+// ── Zone ──────────────────────────────────────────────
+function renderZone(){
+  const ZONES=[
+    {name:'Z1 恢復',min:97,max:110,color:'#85B7EB',desc:'慢走、恢復'},
+    {name:'Z2 基礎',min:110,max:128,color:'#30d158',desc:'超慢跑核心 ★'},
+    {name:'Z3 有氧',min:128,max:146,color:'#ff9500',desc:'需降速回 Z2'},
+    {name:'Z4 閾值',min:146,max:160,color:'#ff6b35',desc:'警告區間'},
+    {name:'Z5 最大',min:160,max:177,color:'#ff3b30',desc:'立即停止'},
+  ];
+  document.getElementById('zone-list').innerHTML=ZONES.map(z=>`
+    <div class="z-row">
+      <div class="z-name" style="color:${z.color}">${z.name}</div>
+      <div class="z-track"><div class="z-bar" style="background:${z.color};width:${Math.round((z.max-z.min)/(177-97)*100)}%"></div></div>
+      <div class="z-bpm">${z.min}–${z.max}</div>
+    </div>
+    <div style="font-size:10px;color:var(--text3);margin:-2px 0 8px 72px">${z.desc}</div>`).join('');
+}
+
+// ── Weight ─────────────────────────────────────────────
+function addWeight(){
+  const d=document.getElementById('w-date').value,v=parseFloat(document.getElementById('w-val').value);
+  if(!d||!v){toast('請輸入日期與體重');return;}
+  weights=weights.filter(w=>w.date!==d);weights.push({date:d,val:v});weights.sort((a,b)=>a.date.localeCompare(b.date));
+  save();renderWeight();if(shUrl)getReq({type:'weight',date:d,val:v});
+  document.getElementById('w-val').value='';document.getElementById('w-date').value=today();
+  toast('體重已記錄 ✓');showSt('w-st','ok','儲存成功');
+}
+function delWeight(date){confirm2('確定刪除體重記錄？',date,()=>{weights=weights.filter(w=>w.date!==date);save();renderWeight();toast('已刪除');});}
+function renderWeight(){
+  document.getElementById('w-goal').textContent=goals.tw.toFixed(1);
+  if(!weights.length){['w-cur','w-min','w-delta'].forEach(id=>document.getElementById(id).textContent='—');document.getElementById('w-list').innerHTML='<div class="empty">尚無記錄</div>';return;}
+  const v=weights.map(w=>w.val);
+  document.getElementById('w-cur').textContent=v[v.length-1].toFixed(1);
+  document.getElementById('w-min').textContent=Math.min(...v).toFixed(1);
+  const d=v[v.length-1]-v[0];const wdEl=document.getElementById('w-delta');wdEl.textContent=(d>=0?'+':'')+d.toFixed(1);wdEl.style.color=d<=0?'var(--green)':'var(--red)';
+  document.getElementById('w-list').innerHTML=[...weights].reverse().map(w=>`<div class="w-item"><span style="font-weight:600">${w.date}</span><span style="color:var(--text3)">${w.val} kg</span><button class="icon-btn icon-btn-del" onclick="delWeight('${w.date}')" aria-label="刪除"><i class="ti ti-trash" style="font-size:13px"></i></button></div>`).join('');
+}
+
+// ── Sheets ─────────────────────────────────────────────
+async function getReq(p){if(!shUrl)return;try{await fetch(shUrl+'?'+new URLSearchParams(p),{mode:'no-cors'});}catch(e){}}
+function syncEntry(e){getReq({type:'workout',type2:e.type,id:e.id,date:e.date,dist:e.dist,sec:e.sec,timeFmt:fmtTime(e.sec),pace:e.pace?fmtPace(e.pace):'',hrAvg:e.hrAvg,hrMax:e.hrMax,pwAvg:e.pwAvg,pwMax:e.pwMax,cal:e.cal,aeroMin:e.aeroMin,anaeroMin:e.anaeroMin,zone:e.zone?e.zone.name:'',note:e.note});}
+function saveCfg(){shUrl=document.getElementById('sh-url').value.trim();localStorage.setItem(KEYS.url,shUrl);document.getElementById('conn-dot').style.background=shUrl?'#30d158':'var(--text3)';document.getElementById('conn-lbl').textContent=shUrl?'已設定 ✓':'未設定';setBadge(!!shUrl);showSt('sh-st','ok','已儲存');}
+async function testConn(){saveCfg();if(!shUrl){toast('請先輸入 URL');return;}showSt('sh-st','pend','測試中...');try{const r=await fetch(shUrl+'?type=test',{mode:'cors'});await r.json();showSt('sh-st','ok','連線正常 ✓');}catch(e){showSt('sh-st','err','CORS 限制（正常）— 直接點備份測試');}}
+async function syncAll(){
+  saveCfg();if(!shUrl){toast('請先輸入 URL');return;}showSt('sh-st','pend','備份中...');
+  const workouts=logs.map(e=>({id:e.id,date:e.date,type:e.type,dist:e.dist,sec:e.sec,timeFmt:fmtTime(e.sec),pace:e.pace?fmtPace(e.pace):'',hrAvg:e.hrAvg,hrMax:e.hrMax,pwAvg:e.pwAvg,pwMax:e.pwMax,cal:e.cal,aeroMin:e.aeroMin||0,anaeroMin:e.anaeroMin||0,zone:e.zone?e.zone.name:'',note:e.note}));
+  const payload=encodeURIComponent(JSON.stringify({workouts,weights}));
+  try{await fetch(shUrl+'?type=sync_all&payload='+payload,{mode:'no-cors'});showSt('sh-st','ok','備份完成 ✓');document.getElementById('sh-stats').textContent=`上次備份：${new Date().toLocaleString('zh-TW')} | 訓練${logs.length}筆`;}catch(e){showSt('sh-st','err','失敗：'+e.message);}
+}
+async function restoreFromSheets(){
+  saveCfg();if(!shUrl){toast('請先設定 Sheets URL');return;}
+  showSt('sh-st','pend','從 Sheets 讀取資料...');
+  try{
+    const r=await fetch(shUrl+'?type=read_all',{mode:'cors'});const j=await r.json();
+    if(!j.ok||!j.data){showSt('sh-st','err','讀取失敗');return;}
+    const{workouts,weights:wts}=j.data;
+    if(!workouts.length&&!wts.length){showSt('sh-st','err','Sheets 無資料');return;}
+    confirm2('確定從 Sheets 還原？',`訓練 ${workouts.length} 筆 + 體重 ${wts.length} 筆，將覆蓋本機資料`,()=>{
+      logs=workouts;weights=wts;save();renderChallenge();renderSummary();renderWeight();
+      showSt('sh-st','ok',`已還原 ${workouts.length} 筆訓練 ✓`);toast('資料已從 Sheets 還原 ✓');
+    });
+  }catch(e){showSt('sh-st','err','讀取失敗（需更新 Apps Script 為 v2 版本）');}
+}
+
+// ── Export ─────────────────────────────────────────────
+function exportCSV(){
+  if(!logs.length){toast('尚無資料');return;}
+  const h=['ID','日期','類型','距離(km)','時間(秒)','時間格式','配速','平均心率','最大心率','平均功率','最大功率','熱量','有氧(min)','無氧(min)','心率區間','備註'];
+  const csv=[h,...logs.map(l=>[l.id,l.date,tLbl[l.type]||l.type,l.dist,l.sec,fmtTime(l.sec),l.pace?fmtPace(l.pace):'',l.hrAvg,l.hrMax,l.pwAvg,l.pwMax,l.cal,l.aeroMin||0,l.anaeroMin||0,l.zone?l.zone.name:'',l.note])].map(r=>r.map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download=`100Run_${today()}.csv`;a.click();toast('CSV 已下載');
+}
+function exportXLSX(){
+  if(!window.XLSX){toast('函式庫載入中...');return;}
+  const wb=XLSX.utils.book_new();
+  const wH=['ID','日期','類型','距離(km)','時間(秒)','時間格式','配速','平均心率','最大心率','平均功率','最大功率','熱量','有氧(min)','無氧(min)','心率區間','備註'];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([wH,...logs.map(l=>[l.id,l.date,tLbl[l.type]||l.type,l.dist,l.sec,fmtTime(l.sec),l.pace?fmtPace(l.pace):'',l.hrAvg,l.hrMax,l.pwAvg,l.pwMax,l.cal,l.aeroMin||0,l.anaeroMin||0,l.zone?l.zone.name:'',l.note])]),'Workouts');
+  if(weights.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['日期','體重(kg)'],...weights.map(w=>[w.date,w.val])]),'Weight');
+  XLSX.writeFile(wb,`100Run_${today()}.xlsx`);toast('Excel 已下載');
+}
+
+// ── PWA ───────────────────────────────────────────────
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').then(reg=>{
+    reg.update();
+    if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});
+    reg.addEventListener('updatefound',()=>{
+      const nw=reg.installing;
+      if(nw)nw.addEventListener('statechange',()=>{if(nw.state==='installed'&&navigator.serviceWorker.controller){window.location.reload();}});
+    });
+  }).catch(()=>{});
+  let refreshing=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(refreshing)return;refreshing=true;window.location.reload();});
+}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;const b=document.getElementById('install-btn');if(b)b.hidden=false;});
+function installPWA(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;});}}
+
+// ── Nav ────────────────────────────────────────────────
+const SECS=['challenge','log','history','chart','kpi','alert','zone','weight','settings'];
+function sw(t){
+  SECS.forEach(s=>{
+    document.getElementById('sec-'+s).classList.toggle('active',s===t);
+    const nb=document.getElementById('nav-'+s);if(nb)nb.classList.toggle('active',s===t);
+    const sb=document.getElementById('sb-'+s);if(sb)sb.classList.toggle('active',s===t);
+  });
+  if(t==='chart')initRingChart();
+  if(t==='history')renderHistory();
+  if(t==='weight')renderWeight();
+  if(t==='log')renderSummary();
+  if(t==='challenge')renderChallenge();
+  if(t==='kpi')renderKPI();
+  if(t==='alert')renderAlert();
+  if(t==='zone')renderZone();
+  if(t==='settings'){loadGoalInputs();if(shUrl){document.getElementById('sh-url').value=shUrl;document.getElementById('conn-dot').style.background='#30d158';document.getElementById('conn-lbl').textContent='已設定 ✓';}}
+}
+
+// ── Init ───────────────────────────────────────────────
+document.getElementById('f-date').value=today();
+document.getElementById('w-date').value=today();
+setBadge(!!shUrl);
+renderChallenge();renderSummary();
+</script>
+</body>
+</html>
