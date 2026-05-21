@@ -209,6 +209,17 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .cfm-btns .btn{flex:1}
 
 /* Toast */
+#more-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:150;align-items:flex-end;justify-content:center}
+#more-overlay.show{display:flex}
+#more-sheet{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:600px;padding:8px 16px calc(var(--nav-h)+var(--safe-bottom)+20px);animation:slideUp .2s ease}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.more-handle{width:36px;height:4px;border-radius:2px;background:var(--sep);margin:8px auto 12px}
+.more-title{font-size:13px;font-weight:600;color:var(--text3);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px}
+.more-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.more-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px 8px;border-radius:var(--rs);background:var(--bg);border:none;cursor:pointer;color:var(--text);font-size:12px;font-weight:500}
+.more-item i{font-size:22px;color:var(--accent)}
+.more-item:active{background:var(--accent-lt)}
+@media(min-width:768px){#more-overlay,#more-sheet{display:none!important}}
 #toast{position:fixed;bottom:calc(var(--nav-h)+var(--safe-bottom)+12px);left:50%;transform:translateX(-50%) translateY(12px);background:rgba(28,28,30,0.9);color:#fff;font-size:13px;padding:10px 20px;border-radius:24px;z-index:300;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap}
 @media(min-width:768px){#toast{bottom:20px}}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -533,11 +544,23 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 <nav id="nav">
   <button class="nav-btn active" onclick="sw('challenge')" id="nav-challenge"><i class="ti ti-flame" aria-hidden="true"></i><span>挑戰</span></button>
   <button class="nav-btn" onclick="sw('log')" id="nav-log"><i class="ti ti-circle-plus" aria-hidden="true"></i><span>記錄</span></button>
+  <button class="nav-btn" onclick="sw('history')" id="nav-history"><i class="ti ti-clipboard-list" aria-hidden="true"></i><span>歷史</span></button>
   <button class="nav-btn" onclick="sw('chart')" id="nav-chart"><i class="ti ti-chart-donut" aria-hidden="true"></i><span>圖表</span></button>
-  <button class="nav-btn" onclick="sw('kpi')" id="nav-kpi"><i class="ti ti-target" aria-hidden="true"></i><span>KPI</span></button>
-  <button class="nav-btn" onclick="sw('alert')" id="nav-alert"><i class="ti ti-bell" aria-hidden="true"></i><span>警示</span></button>
-  <button class="nav-btn" onclick="sw('settings')" id="nav-settings"><i class="ti ti-settings" aria-hidden="true"></i><span>設定</span></button>
+  <button class="nav-btn" onclick="toggleMore()" id="nav-more"><i class="ti ti-dots" aria-hidden="true"></i><span>更多</span></button>
 </nav>
+<div id="more-overlay" onclick="closeMore()">
+  <div id="more-sheet" onclick="event.stopPropagation()">
+    <div class="more-handle"></div>
+    <div class="more-title">更多功能</div>
+    <div class="more-grid">
+      <button class="more-item" onclick="sw('kpi');closeMore()"><i class="ti ti-target"></i><span>KPI 達成率</span></button>
+      <button class="more-item" onclick="sw('alert');closeMore()"><i class="ti ti-bell"></i><span>警示</span></button>
+      <button class="more-item" onclick="sw('zone');closeMore()"><i class="ti ti-heart"></i><span>心率區間</span></button>
+      <button class="more-item" onclick="sw('weight');closeMore()"><i class="ti ti-scale"></i><span>體重記錄</span></button>
+      <button class="more-item" onclick="sw('settings');closeMore()"><i class="ti ti-settings"></i><span>設定與同步</span></button>
+    </div>
+  </div>
+</div>
 </div>
 
 <!-- Edit Sheet -->
@@ -643,6 +666,14 @@ function setTimeFields(px,sec){
 }
 function fmtTime(s){if(!s)return '—';const m=Math.floor(s/60),sc=Math.floor(s%60),ms=Math.round((s%1)*1000);return `${m}:${String(sc).padStart(2,'0')}.${String(ms).padStart(3,'0')}`;}
 function fmtHM(s){return `${Math.floor(s/3600)}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}`;}
+function fmtDate(dateStr){
+  if(!dateStr)return '';
+  const d=new Date(dateStr+'T00:00:00');
+  const wd=['週日','週一','週二','週三','週四','週五','週六'][d.getDay()];
+  const mm=String(d.getMonth()+1).padStart(2,'0');
+  const dd=String(d.getDate()).padStart(2,'0');
+  return mm+'/'+dd+' '+wd;
+}
 function calcPace(d,s){if(!d||!s)return null;const spk=s/d;return{min:Math.floor(spk/60),sec:Math.round(spk%60),total:spk};}
 function fmtPace(p){return p?`${p.min}:${String(p.sec).padStart(2,'0')}`:'—';}
 function calcZone(hr,base){
@@ -855,7 +886,11 @@ const tColor={run:'#fff3e0',cycle:'#e8f5e9',swim:'#e3f2fd',other:'#f3e5f5'};
 function renderHistory(){
   const el=document.getElementById('log-list');
   if(!logs.length){el.innerHTML='<div class="empty">尚無記錄</div>';renderPR();return;}
-  el.innerHTML=[...logs].reverse().map(l=>{
+  const sorted=[...logs].sort((a,b)=>{
+    const c=b.date.localeCompare(a.date);
+    return c!==0?c:(Number(b.id)||0)-(Number(a.id)||0);
+  });
+  el.innerHTML=sorted.map(l=>{
     const p=l.pace?fmtPace(l.pace)+'/km':'';
     const hr=l.hrAvg?`HR ${l.hrAvg}/${l.hrMax||'—'}bpm`:'';
     const pw=l.pwAvg?`${l.pwAvg}/${l.pwMax||'—'}W`:'';
@@ -863,7 +898,7 @@ function renderHistory(){
     return`<div class="log-item">
       <div class="log-icon" style="background:${tColor[l.type]||tColor.other}">${tIcon[l.type]||'⚡'}</div>
       <div class="log-body">
-        <div class="log-date">${l.date} <span style="font-size:11px;color:var(--text3)">${tLbl[l.type]}</span>${hrAlert?`<span style="font-size:11px;color:${l.hrAvg>goals.z4?'var(--red)':'var(--accent)'};margin-left:4px">${hrAlert}</span>`:''}</div>
+        <div class="log-date">${fmtDate(l.date)} <span style="font-size:11px;color:var(--text3)">${tLbl[l.type]}</span>${hrAlert?`<span style="font-size:11px;color:${l.hrAvg>goals.z4?'var(--red)':'var(--accent)'};margin-left:4px">${hrAlert}</span>`:''}</div>
         <div class="log-meta">${l.dist?l.dist+'km ':''} ${l.sec?fmtTime(l.sec)+' ':''} ${p}<br>${hr}${hr&&pw?' · ':''}${pw}</div>
       </div>
       <div class="log-acts">
@@ -1076,7 +1111,7 @@ function renderWeight(){
   document.getElementById('w-cur').textContent=v[v.length-1].toFixed(1);
   document.getElementById('w-min').textContent=Math.min(...v).toFixed(1);
   const d=v[v.length-1]-v[0];const wdEl=document.getElementById('w-delta');wdEl.textContent=(d>=0?'+':'')+d.toFixed(1);wdEl.style.color=d<=0?'var(--green)':'var(--red)';
-  document.getElementById('w-list').innerHTML=[...weights].reverse().map(w=>`<div class="w-item"><span style="font-weight:600">${w.date}</span><span style="color:var(--text3)">${w.val} kg</span><button class="icon-btn icon-btn-del" onclick="delWeight('${w.date}')" aria-label="刪除"><i class="ti ti-trash" style="font-size:13px"></i></button></div>`).join('');
+  document.getElementById('w-list').innerHTML=[...weights].sort((a,b)=>b.date.localeCompare(a.date)).map(w=>`<div class="w-item"><span style="font-weight:600">${fmtDate(w.date)}</span><span style="color:var(--text3)">${w.val} kg</span><button class="icon-btn icon-btn-del" onclick="delWeight('${w.date}')" aria-label="刪除"><i class="ti ti-trash" style="font-size:13px"></i></button></div>`).join('');
 }
 
 // ── Sheets ─────────────────────────────────────────────
@@ -1127,6 +1162,10 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catc
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;const b=document.getElementById('install-btn');if(b)b.hidden=false;});
 function installPWA(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;});}}
 
+// ── 更多彈出層 ──────────────────────────────────────────
+function toggleMore(){document.getElementById('more-overlay').classList.toggle('show');}
+function closeMore(){document.getElementById('more-overlay').classList.remove('show');}
+
 // ── Nav ────────────────────────────────────────────────
 const SECS=['challenge','log','history','chart','kpi','alert','zone','weight','settings'];
 function sw(t){
@@ -1135,6 +1174,10 @@ function sw(t){
     const nb=document.getElementById('nav-'+s);if(nb)nb.classList.toggle('active',s===t);
     const sb=document.getElementById('sb-'+s);if(sb)sb.classList.toggle('active',s===t);
   });
+  // 手機底部「更多」高亮：當前分頁屬於更多群組時
+  const moreSecs=['kpi','alert','zone','weight','settings'];
+  const moreBtn=document.getElementById('nav-more');
+  if(moreBtn)moreBtn.classList.toggle('active',moreSecs.includes(t));
   if(t==='chart')initRingChart();
   if(t==='history')renderHistory();
   if(t==='weight')renderWeight();
