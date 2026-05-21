@@ -668,11 +668,15 @@ function fmtTime(s){if(!s)return '—';const m=Math.floor(s/60),sc=Math.floor(s%
 function fmtHM(s){return `${Math.floor(s/3600)}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}`;}
 function fmtDate(dateStr){
   if(!dateStr)return '';
-  const d=new Date(dateStr+'T00:00:00');
+  // 容錯：只取 YYYY-MM-DD 部分
+  const s=String(dateStr).substring(0,10);
+  const parts=s.split('-');
+  if(parts.length!==3)return s;
+  const y=parseInt(parts[0]),mo=parseInt(parts[1]),da=parseInt(parts[2]);
+  if(isNaN(y)||isNaN(mo)||isNaN(da))return s;
+  const d=new Date(y,mo-1,da);
   const wd=['週日','週一','週二','週三','週四','週五','週六'][d.getDay()];
-  const mm=String(d.getMonth()+1).padStart(2,'0');
-  const dd=String(d.getDate()).padStart(2,'0');
-  return mm+'/'+dd+' '+wd;
+  return String(mo).padStart(2,'0')+'/'+String(da).padStart(2,'0')+' '+wd;
 }
 function calcPace(d,s){if(!d||!s)return null;const spk=s/d;return{min:Math.floor(spk/60),sec:Math.round(spk%60),total:spk};}
 function fmtPace(p){return p?`${p.min}:${String(p.sec).padStart(2,'0')}`:'—';}
@@ -1135,7 +1139,7 @@ async function restoreFromSheets(){
     const{workouts,weights:wts}=j.data;
     if(!workouts.length&&!wts.length){showSt('sh-st','err','Sheets 無資料');return;}
     confirm2('確定從 Sheets 還原？',`訓練 ${workouts.length} 筆 + 體重 ${wts.length} 筆，將覆蓋本機資料`,()=>{
-      logs=workouts.filter(w=>!w.deleted);weights=wts.filter(w=>!w.deleted);save();renderChallenge();renderSummary();renderWeight();
+      logs=workouts.filter(w=>!w.deleted).map(w=>{w.date=String(w.date||'').substring(0,10);w.dist=parseFloat(w.dist)||0;w.sec=parseFloat(w.sec)||0;w.id=Number(w.id)||w.id;if(w.zone&&typeof w.zone==='string')w.zone={name:w.zone,aero:w.aeroMin||0,anaero:w.anaeroMin||0};w.pace=(w.sec&&w.dist)?calcPace(w.dist,w.sec):null;return w;});weights=wts.filter(w=>!w.deleted).map(w=>{w.date=String(w.date||'').substring(0,10);w.val=parseFloat(w.val)||0;return w;});save();renderChallenge();renderSummary();renderWeight();
       showSt('sh-st','ok',`已還原 ${logs.length} 筆訓練 ✓`);toast('資料已從 Sheets 還原 ✓');
     },'還原');
   }catch(e){showSt('sh-st','err','讀取失敗（需更新 Apps Script 為 v3 版本）');}
@@ -1218,12 +1222,15 @@ async function autoSync(silent=false){
     if(j.ok&&j.data){
       // 合併回本機（過濾掉軟刪除）
       logs=j.data.workouts.filter(w=>!w.deleted).map(w=>{
+        w.date=String(w.date||'').substring(0,10);
+        w.dist=parseFloat(w.dist)||0;
+        w.sec=parseFloat(w.sec)||0;
+        w.id=Number(w.id)||w.id;
         if(w.zone&&typeof w.zone==='string')w.zone={name:w.zone,aero:w.aeroMin||0,anaero:w.anaeroMin||0};
-        if(w.sec&&w.dist&&!w.pace)w.pace=calcPace(w.dist,w.sec);
-        else if(typeof w.pace==='string'&&w.pace){const m=w.pace.match(/^(\d+):(\d+)/);if(m)w.pace={min:parseInt(m[1]),sec:parseInt(m[2]),total:parseInt(m[1])*60+parseInt(m[2])};}
+        w.pace=(w.sec&&w.dist)?calcPace(w.dist,w.sec):null;
         return w;
       });
-      weights=j.data.weights.filter(w=>!w.deleted);
+      weights=j.data.weights.filter(w=>!w.deleted).map(w=>{w.date=String(w.date||'').substring(0,10);w.val=parseFloat(w.val)||0;return w;});
       save();
       lastSyncTime=j.serverTime||new Date().toISOString();
       localStorage.setItem('r100v6_lastsync',lastSyncTime);
