@@ -314,7 +314,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       <div class="fg"><label>日期</label><input type="date" id="f-date"></div>
       <div class="fg"><label>類型</label><select id="f-type"><option value="run">跑步</option><option value="cycle">騎車</option><option value="swim">游泳</option><option value="other">其他</option></select></div>
       <div class="fg"><label>距離 (km)</label><input type="number" id="f-dst" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></div>
-      <div class="fg"><label>時間 mm:ss.ms</label><input type="text" id="f-time" placeholder="42:30.500" inputmode="numeric"></div>
+      <div class="fg"><label>時間（分 / 秒 / 毫秒）</label><div style="display:flex;gap:6px;align-items:center"><input type="number" id="f-tmin" placeholder="分" min="0" inputmode="numeric" style="text-align:center"><span style="color:var(--text3);font-weight:600">:</span><input type="number" id="f-tsec" placeholder="秒" min="0" max="59" inputmode="numeric" style="text-align:center"><span style="color:var(--text3);font-weight:600">.</span><input type="number" id="f-tms" placeholder="毫秒" min="0" max="999" inputmode="numeric" style="text-align:center"></div></div>
       <div class="fg"><label>平均心率 (bpm)</label><input type="number" id="f-hra" min="0" placeholder="—" inputmode="numeric"></div>
       <div class="fg"><label>最大心率 (bpm)</label><input type="number" id="f-hrm" min="0" placeholder="—" inputmode="numeric"></div>
       <div class="fg"><label>平均功率 (W)</label><input type="number" id="f-pwa" min="0" placeholder="—" inputmode="numeric"></div>
@@ -549,7 +549,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       <div class="fg"><label>日期</label><input type="date" id="e-date"></div>
       <div class="fg"><label>類型</label><select id="e-type"><option value="run">跑步</option><option value="cycle">騎車</option><option value="swim">游泳</option><option value="other">其他</option></select></div>
       <div class="fg"><label>距離 (km)</label><input type="number" id="e-dst" min="0" step="0.01" inputmode="decimal"></div>
-      <div class="fg"><label>時間 mm:ss.ms</label><input type="text" id="e-time" inputmode="numeric"></div>
+      <div class="fg"><label>時間（分 / 秒 / 毫秒）</label><div style="display:flex;gap:6px;align-items:center"><input type="number" id="e-tmin" placeholder="分" min="0" inputmode="numeric" style="text-align:center"><span style="color:var(--text3);font-weight:600">:</span><input type="number" id="e-tsec" placeholder="秒" min="0" max="59" inputmode="numeric" style="text-align:center"><span style="color:var(--text3);font-weight:600">.</span><input type="number" id="e-tms" placeholder="毫秒" min="0" max="999" inputmode="numeric" style="text-align:center"></div></div>
       <div class="fg"><label>平均心率</label><input type="number" id="e-hra" min="0" inputmode="numeric"></div>
       <div class="fg"><label>最大心率</label><input type="number" id="e-hrm" min="0" inputmode="numeric"></div>
       <div class="fg"><label>平均功率 (W)</label><input type="number" id="e-pwa" min="0" inputmode="numeric"></div>
@@ -629,6 +629,18 @@ function parseTime(s){
   if(m)return parseInt(m[1])*3600+parseInt(m[2])*60+parseInt(m[3])+(m[4]?parseInt(m[4].padEnd(3,'0'))/1000:0);
   return 0;
 }
+function getTimeSec(px){
+  const m=parseInt(document.getElementById(px+'-tmin').value)||0;
+  const s=parseInt(document.getElementById(px+'-tsec').value)||0;
+  const ms=parseInt(document.getElementById(px+'-tms').value)||0;
+  return m*60+s+ms/1000;
+}
+function setTimeFields(px,sec){
+  if(!sec){document.getElementById(px+'-tmin').value='';document.getElementById(px+'-tsec').value='';document.getElementById(px+'-tms').value='';return;}
+  document.getElementById(px+'-tmin').value=Math.floor(sec/60);
+  document.getElementById(px+'-tsec').value=Math.floor(sec%60);
+  document.getElementById(px+'-tms').value=Math.round((sec%1)*1000);
+}
 function fmtTime(s){if(!s)return '—';const m=Math.floor(s/60),sc=Math.floor(s%60),ms=Math.round((s%1)*1000);return `${m}:${String(sc).padStart(2,'0')}.${String(ms).padStart(3,'0')}`;}
 function fmtHM(s){return `${Math.floor(s/3600)}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}`;}
 function calcPace(d,s){if(!d||!s)return null;const spk=s/d;return{min:Math.floor(spk/60),sec:Math.round(spk%60),total:spk};}
@@ -643,7 +655,7 @@ function calcZone(hr,base){
 // ── Live calc ──────────────────────────────────────────
 function liveCalc(){
   const d=parseFloat(document.getElementById('f-dst').value)||0;
-  const s=parseTime(document.getElementById('f-time').value);
+  const s=getTimeSec('f');
   const hr=parseFloat(document.getElementById('f-hra').value)||0;
   const base=parseFloat(document.getElementById('f-hrb').value)||177;
   const box=document.getElementById('ac-box');
@@ -658,12 +670,12 @@ function liveCalc(){
   if(hr>0&&hr>goals.z4){toast('⚠ 心率超過 Z4 警戒值 '+goals.z4+'bpm！');}
   else if(hr>0&&hr>goals.z2){toast('心率超過 Z2 上限，建議降速');}
 }
-['f-dst','f-time','f-hra','f-hrb'].forEach(id=>document.getElementById(id).addEventListener('input',liveCalc));
+['f-dst','f-tmin','f-tsec','f-tms','f-hra','f-hrb'].forEach(id=>document.getElementById(id).addEventListener('input',liveCalc));
 
 // ── Entry CRUD ─────────────────────────────────────────
 function buildEntry(px){
   const dist=parseFloat(document.getElementById(px+'-dst').value)||0;
-  const sec=parseTime(document.getElementById(px+'-time').value);
+  const sec=getTimeSec(px);
   const hrAvg=parseFloat(document.getElementById(px+'-hra').value)||0;
   const hrMax=parseFloat(document.getElementById(px+'-hrm').value)||0;
   const pwAvg=parseFloat(document.getElementById(px+'-pwa').value)||0;
@@ -681,7 +693,7 @@ function addEntry(){
   logs.push(e);logs.sort((a,b)=>a.date.localeCompare(b.date));
   save();renderSummary();renderChallenge();
   if(shUrl)upsertEntry(e);
-  ['f-dst','f-time','f-hra','f-hrm','f-pwa','f-pwm','f-cal','f-note'].forEach(id=>document.getElementById(id).value='');
+  ['f-dst','f-tmin','f-tsec','f-tms','f-hra','f-hrm','f-pwa','f-pwm','f-cal','f-note'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-date').value=today();document.getElementById('ac-box').style.display='none';
   toast('記錄已儲存 ✓');
 }
@@ -689,7 +701,7 @@ function openEdit(id){
   const e=logs.find(l=>l.id===id);if(!e)return;
   document.getElementById('e-id').value=id;
   document.getElementById('e-date').value=e.date;document.getElementById('e-type').value=e.type;
-  document.getElementById('e-dst').value=e.dist||'';document.getElementById('e-time').value=e.sec?fmtTime(e.sec):'';
+  document.getElementById('e-dst').value=e.dist||'';setTimeFields('e',e.sec);
   document.getElementById('e-hra').value=e.hrAvg||'';document.getElementById('e-hrm').value=e.hrMax||'';
   document.getElementById('e-pwa').value=e.pwAvg||'';document.getElementById('e-pwm').value=e.pwMax||'';
   document.getElementById('e-cal').value=e.cal||'';document.getElementById('e-hrb').value=177;document.getElementById('e-note').value=e.note||'';
