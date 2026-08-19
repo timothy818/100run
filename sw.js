@@ -1,5 +1,5 @@
-// Service Worker v6.1 - 強制更新
-const CACHE = '100run-v6-1-' + Date.now();
+// Service Worker v6.1 - 強制更新 (365天版)
+const CACHE = '365run-v6-1-' + Date.now();
 const FILES = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', e => {

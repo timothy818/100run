@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="100_Run">
+<meta name="apple-mobile-web-app-title" content="365_Run">
 <meta name="theme-color" content="#ff9500">
 <link rel="manifest" href="manifest.json">
-<title>100_Run v7 自動同步版</title>
+<title>365_Run v7 自動同步版</title>
 <style>
 :root{
   --bg:#f2f2f7;--card:#fff;--sep:#e5e5ea;
@@ -100,10 +100,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .rl{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text3)}
 .rl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 
-/* 100-day calendar */
-.cal100{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin-bottom:8px}
+/* 365-day calendar */
+.cal100{display:grid;grid-template-columns:repeat(13,1fr);gap:3px;margin-bottom:8px}
 .c100{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600}
 .c-done{background:var(--accent);color:#fff}
+.c-makeup{background:var(--blue,#0a84ff);color:#fff}
 .c-miss{background:#fff3e0;color:#ff9500;border:0.5px solid #fbd9b0}
 .c-today{background:var(--accent);color:#fff;outline:2.5px solid #ff6b00;outline-offset:1px}
 .c-future{background:var(--bg);color:var(--text3);opacity:0.3}
@@ -230,7 +231,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 <div id="app">
 
 <div id="sidebar">
-  <div class="sb-logo"><span>100</span>_Run<span class="sb-sub" id="sb-badge">超慢跑挑戰</span></div>
+  <div class="sb-logo"><span>365</span>_Run<span class="sb-sub" id="sb-badge">超慢跑挑戰</span></div>
   <button class="sb-item active" onclick="sw('challenge')" id="sb-challenge"><i class="ti ti-flame" aria-hidden="true"></i>挑戰進度</button>
   <button class="sb-item" onclick="sw('log')" id="sb-log"><i class="ti ti-circle-plus" aria-hidden="true"></i>新增記錄</button>
   <button class="sb-item" onclick="sw('history')" id="sb-history"><i class="ti ti-clipboard-list" aria-hidden="true"></i>歷史記錄</button>
@@ -241,11 +242,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
   <button class="sb-item" onclick="sw('zone')" id="sb-zone"><i class="ti ti-heart" aria-hidden="true"></i>心率區間</button>
   <div class="sb-div"></div>
   <button class="sb-item" onclick="sw('weight')" id="sb-weight"><i class="ti ti-scale" aria-hidden="true"></i>體重記錄</button>
+  <button class="sb-item" onclick="sw('pushup')" id="sb-pushup"><i class="ti ti-barbell" aria-hidden="true"></i>伏地挺身記錄</button>
   <button class="sb-item" onclick="sw('settings')" id="sb-settings"><i class="ti ti-settings" aria-hidden="true"></i>設定與同步</button>
 </div>
 
 <div id="header">
-  <div class="hdr-title"><span>100</span>_Run</div>
+  <div class="hdr-title"><span>365</span>_Run</div>
   <div class="hdr-badge" id="hdr-badge">超慢跑挑戰</div>
 </div>
 
@@ -254,22 +256,22 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 <!-- 挑戰進度 -->
 <div id="sec-challenge" class="sec active">
   <div class="card">
-    <div class="ct">100天超慢跑挑戰</div>
+    <div class="ct">365天超慢跑挑戰</div>
     <div class="ring-area">
       <div class="rw" style="width:150px;height:150px">
-        <canvas id="c-challenge" role="img" aria-label="100天挑戰進度環形圖">挑戰進度</canvas>
+        <canvas id="c-challenge" role="img" aria-label="365天挑戰進度環形圖">挑戰進度</canvas>
         <div class="rc" style="width:90px">
           <div class="rc-l">第</div>
           <div class="rc-v" id="ch-day" style="font-size:32px;color:var(--accent)">0</div>
-          <div class="rc-u">/ 100 天</div>
+          <div class="rc-u">/ 365 天</div>
         </div>
       </div>
       <div class="rm-area">
         <div class="mg" style="margin-bottom:10px;grid-template-columns:1fr 1fr">
           <div class="mc"><div class="mc-l">累積距離</div><div class="mc-v" id="ch-dist">0</div><div class="mc-u">km</div></div>
-          <div class="mc"><div class="mc-l">目標距離</div><div class="mc-v" id="ch-goal-dist">800</div><div class="mc-u">km</div></div>
+          <div class="mc"><div class="mc-l">目標距離</div><div class="mc-v" id="ch-goal-dist">2555</div><div class="mc-u">km</div></div>
           <div class="mc"><div class="mc-l">今日狀態</div><div class="mc-v" id="ch-today-st" style="font-size:14px">—</div><div class="mc-u" id="ch-today-sub"></div></div>
-          <div class="mc"><div class="mc-l">剩餘天數</div><div class="mc-v" id="ch-remain">100</div><div class="mc-u">天</div></div>
+          <div class="mc"><div class="mc-l">剩餘天數</div><div class="mc-v" id="ch-remain">365</div><div class="mc-u">天</div></div>
         </div>
         <div class="pr">
           <div class="pr-hdr"><span class="pr-l">挑戰進度</span><span class="pr-v" id="ch-pct">0%</span></div>
@@ -283,10 +285,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
     </div>
   </div>
   <div class="card">
-    <div class="ct">100天行事曆</div>
+    <div class="ct">365天行事曆</div>
     <div class="cal100" id="cal-100"></div>
     <div style="display:flex;gap:12px;font-size:11px;color:var(--text3);flex-wrap:wrap">
       <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:var(--accent);display:inline-block"></span>達標</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:var(--blue,#0a84ff);display:inline-block"></span>隔天補回</span>
       <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#fff3e0;border:0.5px solid #fbd9b0;display:inline-block"></span>未達標</span>
       <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:var(--bg);display:inline-block;opacity:0.4"></span>待挑戰</span>
     </div>
@@ -401,7 +404,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
     <div class="mg" id="kpi-week-mg"></div>
   </div>
   <div class="card">
-    <div class="ct">100天挑戰累積</div>
+    <div class="ct">365天挑戰累積</div>
     <div class="ring-area">
       <div class="rw" style="width:140px;height:140px">
         <canvas id="c-kpi-ring" role="img" aria-label="KPI達成率環形圖">KPI</canvas>
@@ -476,17 +479,38 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
   <div class="card"><div class="ct">體重記錄</div><div id="w-list"><div class="empty">尚無記錄</div></div></div>
 </div>
 
+<!-- 伏地挺身 -->
+<div id="sec-pushup" class="sec">
+  <div class="mg">
+    <div class="mc"><div class="mc-l">今日次數</div><div class="mc-v" id="pu-today">0</div><div class="mc-u">下</div></div>
+    <div class="mc"><div class="mc-l">最佳單日</div><div class="mc-v" id="pu-best" style="color:var(--green)">—</div><div class="mc-u">下</div></div>
+    <div class="mc"><div class="mc-l">累積總數</div><div class="mc-v" id="pu-total">0</div><div class="mc-u">下</div></div>
+    <div class="mc"><div class="mc-l">本週平均</div><div class="mc-v" id="pu-avg">—</div><div class="mc-u">下/日</div></div>
+  </div>
+  <div class="card">
+    <div class="ct">記錄伏地挺身</div>
+    <div class="form-grid" style="margin-bottom:12px">
+      <div class="fg"><label>日期</label><input type="date" id="pu-date"></div>
+      <div class="fg"><label>次數 (下)</label><input type="number" id="pu-val" min="0" step="1" placeholder="下" inputmode="numeric"></div>
+    </div>
+    <button class="btn btn-primary" onclick="addPushup()">儲存</button>
+    <div id="pu-st" class="st"></div>
+  </div>
+  <div class="card"><div class="ct">伏地挺身趨勢</div><div style="position:relative;width:100%;height:150px"><canvas id="c-pu" role="img" aria-label="伏地挺身次數趨勢">伏地挺身趨勢</canvas></div></div>
+  <div class="card"><div class="ct">伏地挺身記錄</div><div id="pu-list"><div class="empty">尚無記錄</div></div></div>
+</div>
+
 <!-- 設定 -->
 <div id="sec-settings" class="sec">
   <div class="rwd2">
     <div>
       <div class="card">
-        <div class="ct">100天挑戰設定</div>
+        <div class="ct">365天挑戰設定</div>
         <div class="sg">
           <div class="fg"><label>挑戰開始日期</label><input type="date" id="g-start"></div>
           <div class="fg"><label>每日最低距離 (km)</label><input type="number" value="2" id="g-min" step="0.5"></div>
-          <div class="fg"><label>每日目標距離 (km)</label><input type="number" value="8" id="g-target" step="0.5"></div>
-          <div class="fg"><label>總目標距離 (km)</label><input type="number" value="800" id="g-total"></div>
+          <div class="fg"><label>每日目標距離 (km)</label><input type="number" value="7" id="g-target" step="0.5"></div>
+          <div class="fg"><label>總目標距離 (km)</label><input type="number" value="2555" id="g-total"></div>
         </div>
       </div>
       <div class="card">
@@ -557,6 +581,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       <button class="more-item" onclick="sw('alert');closeMore()"><i class="ti ti-bell"></i><span>警示</span></button>
       <button class="more-item" onclick="sw('zone');closeMore()"><i class="ti ti-heart"></i><span>心率區間</span></button>
       <button class="more-item" onclick="sw('weight');closeMore()"><i class="ti ti-scale"></i><span>體重記錄</span></button>
+      <button class="more-item" onclick="sw('pushup');closeMore()"><i class="ti ti-barbell"></i><span>伏地挺身</span></button>
       <button class="more-item" onclick="sw('settings');closeMore()"><i class="ti ti-settings"></i><span>設定與同步</span></button>
     </div>
   </div>
@@ -600,7 +625,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 // ── 資料遷移 ───────────────────────────────────────────
-const KEYS={logs:'r100v6_logs',wts:'r100v6_wts',url:'r100v6_url',goals:'r100v6_goals'};
+const KEYS={logs:'r100v6_logs',wts:'r100v6_wts',pus:'r100v6_pushups',url:'r100v6_url',goals:'r100v6_goals'};
 const OLD=[
   {logs:'r100v5_logs',wts:'r100v5_wts',url:'r100v5_url'},
   {logs:'r100v4_logs',wts:'r100v4_wts',url:'r100v4_url'},
@@ -621,16 +646,17 @@ function migrate(){
 migrate();
 
 // ── State ──────────────────────────────────────────────
-let logs=[],weights=[],shUrl='',charts={},confirmCb=null,currentMetric='dist',currentPeriod=0,deferredPrompt=null;
-const DEFAULT_GOALS={start:'',minDist:2,targetDist:8,totalDist:800,z2:128,z4:160,tw:74,mdist:120};
+let logs=[],weights=[],pushups=[],shUrl='',charts={},confirmCb=null,currentMetric='dist',currentPeriod=0,deferredPrompt=null;
+const DEFAULT_GOALS={start:'',minDist:2,targetDist:7,totalDist:2555,z2:128,z4:160,tw:74,mdist:120};
 let goals={...DEFAULT_GOALS};
 
 try{logs=JSON.parse(localStorage.getItem(KEYS.logs)||'[]');}catch(e){logs=[];}
 try{weights=JSON.parse(localStorage.getItem(KEYS.wts)||'[]');}catch(e){weights=[];}
+try{pushups=JSON.parse(localStorage.getItem(KEYS.pus)||'[]');}catch(e){pushups=[];}
 try{shUrl=localStorage.getItem(KEYS.url)||'';}catch(e){}
 try{const g=JSON.parse(localStorage.getItem(KEYS.goals)||'{}');goals={...DEFAULT_GOALS,...g};}catch(e){}
 
-function save(){localStorage.setItem(KEYS.logs,JSON.stringify(logs));localStorage.setItem(KEYS.wts,JSON.stringify(weights));}
+function save(){localStorage.setItem(KEYS.logs,JSON.stringify(logs));localStorage.setItem(KEYS.wts,JSON.stringify(weights));localStorage.setItem(KEYS.pus,JSON.stringify(pushups));}
 function saveGoalStore(){localStorage.setItem(KEYS.goals,JSON.stringify(goals));}
 function today(){return new Date().toISOString().split('T')[0];}
 function dayDiff(a,b){return Math.round((new Date(b)-new Date(a))/86400000);}
@@ -776,8 +802,8 @@ function delEntry(id){
 function saveGoals(){
   goals.start=document.getElementById('g-start').value;
   goals.minDist=parseFloat(document.getElementById('g-min').value)||2;
-  goals.targetDist=parseFloat(document.getElementById('g-target').value)||8;
-  goals.totalDist=parseFloat(document.getElementById('g-total').value)||800;
+  goals.targetDist=parseFloat(document.getElementById('g-target').value)||7;
+  goals.totalDist=parseFloat(document.getElementById('g-total').value)||2555;
   goals.z2=parseFloat(document.getElementById('g-z2').value)||128;
   goals.z4=parseFloat(document.getElementById('g-z4').value)||160;
   goals.tw=parseFloat(document.getElementById('g-tw').value)||74;
@@ -798,15 +824,45 @@ function loadGoalInputs(){
   document.getElementById('g-mdist').value=goals.mdist;
 }
 
+// ── Day status (含隔天補回判斷) ──────────────────────────
+// 規則：若某日未達每日最低門檻(miss)，且「隔天」單日距離達到最低門檻的2倍，
+// 視為已補回前一天，前一天狀態改為 makeup(補跑)，隔天狀態為 done。
+// 補回機會僅限「missed後的下一天」，若隔天仍未補足，前一天視為永久未達標。
+function computeDayStatuses(){
+  const startStr=goals.start||today();
+  const startDate=new Date(startStr);
+  const nowDate=new Date(today());
+  const dailyDist={};
+  logs.forEach(l=>{dailyDist[l.date]=(dailyDist[l.date]||0)+l.dist;});
+  const statuses={};
+  let pendingDate=null;
+  for(let d=new Date(startDate);d<=nowDate;d.setDate(d.getDate()+1)){
+    const ds=d.toISOString().split('T')[0];
+    const dist=dailyDist[ds]||0;
+    if(pendingDate&&dist>=goals.minDist*2){
+      statuses[pendingDate]='makeup';
+      statuses[ds]='done';
+      pendingDate=null;
+    }else if(dist>=goals.minDist){
+      statuses[ds]='done';
+      pendingDate=null;
+    }else{
+      statuses[ds]='miss';
+      pendingDate=ds;
+    }
+  }
+  return statuses;
+}
+
 // ── Challenge ──────────────────────────────────────────
 function renderChallenge(){
   const startStr=goals.start||today();
   const startDate=new Date(startStr);
   const nowDate=new Date(today());
-  const daysPassed=Math.max(0,Math.min(100,dayDiff(startStr,today())+1));
-  const remain=Math.max(0,100-daysPassed);
+  const daysPassed=Math.max(0,Math.min(365,dayDiff(startStr,today())+1));
+  const remain=Math.max(0,365-daysPassed);
   const totalDist=logs.reduce((s,l)=>s+l.dist,0);
-  const pct=Math.min(daysPassed,100);
+  const pct=Math.min(Math.round(daysPassed/365*100),100);
   const dpct=Math.min(Math.round(totalDist/goals.totalDist*100),100);
   document.getElementById('ch-day').textContent=daysPassed;
   document.getElementById('ch-dist').textContent=totalDist.toFixed(1);
@@ -816,12 +872,16 @@ function renderChallenge(){
   document.getElementById('ch-dpct').textContent=dpct+'%';
   document.getElementById('ch-bar').style.width=pct+'%';
   document.getElementById('ch-dbar').style.width=dpct+'%';
+  const dayStatuses=computeDayStatuses();
   const todayLogs=logs.filter(l=>l.date===today());
   const todayDist=todayLogs.reduce((s,l)=>s+l.dist,0);
-  const todayDone=todayDist>=goals.minDist;
+  const todayDone=dayStatuses[today()]==='done';
+  const ydDate=new Date(nowDate);ydDate.setDate(ydDate.getDate()-1);
+  const ydStr=ydDate.toISOString().split('T')[0];
+  const madeUpYesterday=dayStatuses[ydStr]==='makeup';
   document.getElementById('ch-today-st').textContent=todayDone?'✓':'✗';
   document.getElementById('ch-today-st').style.color=todayDone?'var(--green)':'var(--red)';
-  document.getElementById('ch-today-sub').textContent=todayDone?todayDist.toFixed(1)+'km':'未達標';
+  document.getElementById('ch-today-sub').textContent=todayDone?(madeUpYesterday?todayDist.toFixed(1)+'km（含補回昨日）':todayDist.toFixed(1)+'km'):(dayStatuses[ydStr]==='miss'?'未達標（今日達 '+(goals.minDist*2)+'km 可補回昨日）':'未達標');
 
   if(charts['c-challenge'])charts['c-challenge'].destroy();
   charts['c-challenge']=new Chart(document.getElementById('c-challenge'),{
@@ -829,17 +889,17 @@ function renderChallenge(){
     options:{responsive:true,maintainAspectRatio:true,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{duration:600}}
   });
 
-  // 100-day calendar
+  // 365-day calendar
   const grid=document.getElementById('cal-100');grid.innerHTML='';
-  const trainedDates=new Set(logs.map(l=>l.date));
-  for(let i=1;i<=100;i++){
+  for(let i=1;i<=365;i++){
     const el=document.createElement('div');el.className='c100';el.textContent=i;
     const d=new Date(startDate);d.setDate(startDate.getDate()+i-1);
     const ds=d.toISOString().split('T')[0];
-    const isToday=ds===today();const isPast=d<=nowDate;const hasTrain=trainedDates.has(ds);
+    const isToday=ds===today();const isPast=d<=nowDate;const st=dayStatuses[ds];
     if(!isPast)el.className='c100 c-future';
-    else if(isToday&&hasTrain)el.className='c100 c-today';
-    else if(hasTrain)el.className='c100 c-done';
+    else if(isToday&&st==='done')el.className='c100 c-today';
+    else if(st==='makeup')el.className='c100 c-makeup';
+    else if(st==='done')el.className='c100 c-done';
     else el.className='c100 c-miss';
     grid.appendChild(el);
   }
@@ -848,7 +908,8 @@ function renderChallenge(){
 
 // ── Streak & Heatmap ───────────────────────────────────
 function getStreaks(){
-  const dates=[...new Set(logs.map(l=>l.date))].sort();
+  const st=computeDayStatuses();
+  const dates=Object.keys(st).filter(d=>st[d]==='done'||st[d]==='makeup').sort();
   if(!dates.length)return{cur:0,best:0};
   const runs=[];let start=dates[0],len=1;
   for(let i=1;i<dates.length;i++){if(dayDiff(dates[i-1],dates[i])===1)len++;else{runs.push({start,end:dates[i-1],days:len});start=dates[i];len=1;}}
@@ -1027,7 +1088,7 @@ function renderKPI(){
   const aeroAvg=allAero.length?Math.round(allAero.reduce((s,l)=>s+l.aeroMin/(l.aeroMin+l.anaeroMin)*100,0)/allAero.length):0;
   const daysDone=new Set(logs.map(l=>l.date)).size;
   const startStr=goals.start||today();
-  const totalDays=Math.max(1,Math.min(100,dayDiff(startStr,today())+1));
+  const totalDays=Math.max(1,Math.min(365,dayDiff(startStr,today())+1));
   const dp=Math.min(totalDist/goals.totalDist*100,100);const hp=allZ2;const ap=aeroAvg;const dayp=Math.min(daysDone/totalDays*100,100);
   const overall=Math.round((dp+hp+ap+dayp)/4);
   document.getElementById('kpi-pct').textContent=overall+'%';
@@ -1062,7 +1123,11 @@ function renderAlert(){
   const todayDist=todayLogs.reduce((s,l)=>s+l.dist,0);
   const todayHr=todayLogs.filter(l=>l.hrAvg>0).map(l=>l.hrAvg);
   const avgTodayHr=todayHr.length?Math.round(todayHr.reduce((a,b)=>a+b,0)/todayHr.length):0;
-  if(todayDist>=goals.minDist)alerts.push({level:'green',title:'今日達標',sub:`${todayDist.toFixed(1)} km 已完成，超慢跑挑戰繼續`,badge:'達標'});
+  const _dayStatuses=computeDayStatuses();
+  const _yd=new Date();_yd.setDate(_yd.getDate()-1);const _ydStr=_yd.toISOString().split('T')[0];
+  const canMakeupToday=_dayStatuses[_ydStr]==='miss';
+  if(todayDist>=goals.minDist)alerts.push({level:'green',title:'今日達標',sub:canMakeupToday&&todayDist>=goals.minDist*2?`${todayDist.toFixed(1)} km 已完成，並已補回昨日缺口`:`${todayDist.toFixed(1)} km 已完成，超慢跑挑戰繼續`,badge:'達標'});
+  else if(canMakeupToday)alerts.push({level:'orange',title:'昨日未達標，今日可補回',sub:`今日累積達 ${goals.minDist*2} km 即可一併補回昨日，目前 ${todayDist.toFixed(1)} km`,badge:'可補回'});
   else alerts.push({level:'orange',title:'今日尚未達標',sub:`最低門檻 ${goals.minDist} km，目前 ${todayDist.toFixed(1)} km`,badge:'提醒'});
   if(avgTodayHr>goals.z4)alerts.push({level:'red',title:'心率超過 Z4 警戒值',sub:`平均 ${avgTodayHr} bpm 超過 ${goals.z4} bpm，請立即降速或停止`,badge:'警告'});
   else if(avgTodayHr>goals.z2)alerts.push({level:'orange',title:'心率超過 Z2 上限',sub:`平均 ${avgTodayHr} bpm，超慢跑目標 ≤ ${goals.z2} bpm，建議降速`,badge:'注意'});
@@ -1131,6 +1196,42 @@ function renderWeight(){
   document.getElementById('w-list').innerHTML=[...weights].sort((a,b)=>b.date.localeCompare(a.date)).map(w=>`<div class="w-item"><span style="font-weight:600">${fmtDate(w.date)}</span><span style="color:var(--text3)">${w.val} kg</span><button class="icon-btn icon-btn-del" onclick="delWeight('${w.date}')" aria-label="刪除"><i class="ti ti-trash" style="font-size:13px"></i></button></div>`).join('');
 }
 
+// ── Pushup ─────────────────────────────────────────────
+function addPushup(){
+  const d=document.getElementById('pu-date').value,v=parseInt(document.getElementById('pu-val').value);
+  if(!d||!v&&v!==0){toast('請輸入日期與次數');return;}
+  const now=new Date().toISOString();
+  pushups=pushups.filter(p=>p.date!==d);pushups.push({date:d,count:v,updatedAt:now});pushups.sort((a,b)=>a.date.localeCompare(b.date));
+  save();renderPushup();if(shUrl)getReq({type:'upsert',kind:'pushup',date:d,count:v});
+  document.getElementById('pu-val').value='';document.getElementById('pu-date').value=today();
+  toast('伏地挺身已記錄 ✓');showSt('pu-st','ok','儲存成功');
+}
+function delPushup(date){confirm2('確定刪除伏地挺身記錄？',date,()=>{
+  if(shUrl)getReq({type:'delete',kind:'pushup',date});
+  pushups=pushups.filter(p=>p.date!==date);save();renderPushup();toast('已刪除');
+},'刪除');}
+function renderPushup(){
+  if(!pushups.length){['pu-today','pu-total'].forEach(id=>document.getElementById(id).textContent='0');['pu-best','pu-avg'].forEach(id=>document.getElementById(id).textContent='—');document.getElementById('pu-list').innerHTML='<div class="empty">尚無記錄</div>';if(charts['c-pu']){charts['c-pu'].destroy();delete charts['c-pu'];}return;}
+  const todayP=pushups.find(p=>p.date===today());
+  document.getElementById('pu-today').textContent=todayP?todayP.count:0;
+  document.getElementById('pu-best').textContent=Math.max(...pushups.map(p=>p.count));
+  document.getElementById('pu-total').textContent=pushups.reduce((s,p)=>s+p.count,0);
+  const now=new Date(),ws=new Date(now);ws.setDate(now.getDate()-now.getDay()+1);
+  const wkP=pushups.filter(p=>p.date>=ws.toISOString().split('T')[0]);
+  document.getElementById('pu-avg').textContent=wkP.length?Math.round(wkP.reduce((s,p)=>s+p.count,0)/wkP.length):'—';
+  document.getElementById('pu-list').innerHTML=[...pushups].sort((a,b)=>b.date.localeCompare(a.date)).map(p=>`<div class="w-item"><span style="font-weight:600">${fmtDate(p.date)}</span><span style="color:var(--text3)">${p.count} 下</span><button class="icon-btn icon-btn-del" onclick="delPushup('${p.date}')" aria-label="刪除"><i class="ti ti-trash" style="font-size:13px"></i></button></div>`).join('');
+  renderPuChart();
+}
+function renderPuChart(){
+  if(charts['c-pu'])charts['c-pu'].destroy();
+  if(!pushups.length)return;
+  const recent=pushups.slice(-30);
+  charts['c-pu']=new Chart(document.getElementById('c-pu'),{type:'bar',
+    data:{labels:recent.map(p=>p.date.slice(5)),datasets:[{data:recent.map(p=>p.count),backgroundColor:'#bf5af2',borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'}},x:{grid:{display:false}}}}
+  });
+}
+
 // ── Sheets ─────────────────────────────────────────────
 async function getReq(p){if(!shUrl)return;try{await fetch(shUrl+'?'+new URLSearchParams(p),{mode:'no-cors'});}catch(e){}}
 function upsertEntry(e){getReq({type:'upsert',kind:'workout',type2:e.type,id:e.id,date:e.date,dist:e.dist,sec:e.sec,timeFmt:fmtTime(e.sec),pace:e.pace?fmtPace(e.pace):'',hrAvg:e.hrAvg,hrMax:e.hrMax,pwAvg:e.pwAvg,pwMax:e.pwMax,cal:e.cal,aeroMin:e.aeroMin,anaeroMin:e.anaeroMin,zone:e.zone?e.zone.name:'',note:e.note});}
@@ -1140,7 +1241,7 @@ async function testConn(){saveCfg();if(!shUrl){toast('請先輸入 URL');return;
 async function syncAll(){
   saveCfg();if(!shUrl){toast('請先輸入 URL');return;}showSt('sh-st','pend','備份中...');
   const workouts=logs.map(e=>({id:e.id,date:e.date,type:e.type,dist:e.dist,sec:e.sec,timeFmt:fmtTime(e.sec),pace:e.pace?fmtPace(e.pace):'',hrAvg:e.hrAvg,hrMax:e.hrMax,pwAvg:e.pwAvg,pwMax:e.pwMax,cal:e.cal,aeroMin:e.aeroMin||0,anaeroMin:e.anaeroMin||0,zone:e.zone?e.zone.name:'',note:e.note}));
-  const payload=encodeURIComponent(JSON.stringify({workouts,weights}));
+  const payload=encodeURIComponent(JSON.stringify({workouts,weights,pushups}));
   try{await fetch(shUrl+'?type=sync_all&payload='+payload,{mode:'no-cors'});showSt('sh-st','ok','備份完成 ✓');document.getElementById('sh-stats').textContent=`上次備份：${new Date().toLocaleString('zh-TW')} | 訓練${logs.length}筆`;}catch(e){showSt('sh-st','err','失敗：'+e.message);}
 }
 async function restoreFromSheets(){
@@ -1149,10 +1250,10 @@ async function restoreFromSheets(){
   try{
     const r=await fetch(shUrl+'?type=read_all',{mode:'cors'});const j=await r.json();
     if(!j.ok||!j.data){showSt('sh-st','err','讀取失敗');return;}
-    const{workouts,weights:wts}=j.data;
-    if(!workouts.length&&!wts.length){showSt('sh-st','err','Sheets 無資料');return;}
-    confirm2('確定從 Sheets 還原？',`訓練 ${workouts.length} 筆 + 體重 ${wts.length} 筆，將覆蓋本機資料`,()=>{
-      logs=workouts.filter(w=>!w.deleted).map(w=>{w.date=normDate(w.date);w.dist=parseFloat(w.dist)||0;w.sec=parseFloat(w.sec)||0;w.id=Number(w.id)||w.id;if(w.zone&&typeof w.zone==='string')w.zone={name:w.zone,aero:w.aeroMin||0,anaero:w.anaeroMin||0};w.pace=(w.sec&&w.dist)?calcPace(w.dist,w.sec):null;return w;});weights=wts.filter(w=>!w.deleted).map(w=>{w.date=normDate(w.date);w.val=parseFloat(w.val)||0;return w;});save();renderChallenge();renderSummary();renderWeight();
+    const{workouts,weights:wts,pushups:pus}=j.data;
+    if(!workouts.length&&!wts.length&&!(pus&&pus.length)){showSt('sh-st','err','Sheets 無資料');return;}
+    confirm2('確定從 Sheets 還原？',`訓練 ${workouts.length} 筆 + 體重 ${wts.length} 筆 + 伏地挺身 ${pus?pus.length:0} 筆，將覆蓋本機資料`,()=>{
+      logs=workouts.filter(w=>!w.deleted).map(w=>{w.date=normDate(w.date);w.dist=parseFloat(w.dist)||0;w.sec=parseFloat(w.sec)||0;w.id=Number(w.id)||w.id;if(w.zone&&typeof w.zone==='string')w.zone={name:w.zone,aero:w.aeroMin||0,anaero:w.anaeroMin||0};w.pace=(w.sec&&w.dist)?calcPace(w.dist,w.sec):null;return w;});weights=wts.filter(w=>!w.deleted).map(w=>{w.date=normDate(w.date);w.val=parseFloat(w.val)||0;return w;});pushups=(pus||[]).filter(p=>!p.deleted).map(p=>{p.date=normDate(p.date);p.count=parseInt(p.count)||0;return p;});save();renderChallenge();renderSummary();renderWeight();renderPushup();
       showSt('sh-st','ok',`已還原 ${logs.length} 筆訓練 ✓`);toast('資料已從 Sheets 還原 ✓');
     },'還原');
   }catch(e){showSt('sh-st','err','讀取失敗（需更新 Apps Script 為 v3 版本）');}
@@ -1163,7 +1264,7 @@ function exportCSV(){
   if(!logs.length){toast('尚無資料');return;}
   const h=['ID','日期','類型','距離(km)','時間(秒)','時間格式','配速','平均心率','最大心率','平均功率','最大功率','熱量','有氧(min)','無氧(min)','心率區間','備註'];
   const csv=[h,...logs.map(l=>[l.id,l.date,tLbl[l.type]||l.type,l.dist,l.sec,fmtTime(l.sec),l.pace?fmtPace(l.pace):'',l.hrAvg,l.hrMax,l.pwAvg,l.pwMax,l.cal,l.aeroMin||0,l.anaeroMin||0,l.zone?l.zone.name:'',l.note])].map(r=>r.map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(',')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download=`100Run_${today()}.csv`;a.click();toast('CSV 已下載');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download=`365Run_${today()}.csv`;a.click();toast('CSV 已下載');
 }
 function exportXLSX(){
   if(!window.XLSX){toast('函式庫載入中...');return;}
@@ -1171,7 +1272,8 @@ function exportXLSX(){
   const wH=['ID','日期','類型','距離(km)','時間(秒)','時間格式','配速','平均心率','最大心率','平均功率','最大功率','熱量','有氧(min)','無氧(min)','心率區間','備註'];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([wH,...logs.map(l=>[l.id,l.date,tLbl[l.type]||l.type,l.dist,l.sec,fmtTime(l.sec),l.pace?fmtPace(l.pace):'',l.hrAvg,l.hrMax,l.pwAvg,l.pwMax,l.cal,l.aeroMin||0,l.anaeroMin||0,l.zone?l.zone.name:'',l.note])]),'Workouts');
   if(weights.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['日期','體重(kg)'],...weights.map(w=>[w.date,w.val])]),'Weight');
-  XLSX.writeFile(wb,`100Run_${today()}.xlsx`);toast('Excel 已下載');
+  if(pushups.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['日期','伏地挺身(下)'],...pushups.map(p=>[p.date,p.count])]),'Pushup');
+  XLSX.writeFile(wb,`365Run_${today()}.xlsx`);toast('Excel 已下載');
 }
 
 // ── PWA ───────────────────────────────────────────────
@@ -1184,7 +1286,7 @@ function toggleMore(){document.getElementById('more-overlay').classList.toggle('
 function closeMore(){document.getElementById('more-overlay').classList.remove('show');}
 
 // ── Nav ────────────────────────────────────────────────
-const SECS=['challenge','log','history','chart','kpi','alert','zone','weight','settings'];
+const SECS=['challenge','log','history','chart','kpi','alert','zone','weight','pushup','settings'];
 function sw(t){
   SECS.forEach(s=>{
     document.getElementById('sec-'+s).classList.toggle('active',s===t);
@@ -1192,12 +1294,13 @@ function sw(t){
     const sb=document.getElementById('sb-'+s);if(sb)sb.classList.toggle('active',s===t);
   });
   // 手機底部「更多」高亮：當前分頁屬於更多群組時
-  const moreSecs=['kpi','alert','zone','weight','settings'];
+  const moreSecs=['kpi','alert','zone','weight','pushup','settings'];
   const moreBtn=document.getElementById('nav-more');
   if(moreBtn)moreBtn.classList.toggle('active',moreSecs.includes(t));
   if(t==='chart')initRingChart();
   if(t==='history')renderHistory();
   if(t==='weight')renderWeight();
+  if(t==='pushup')renderPushup();
   if(t==='log')renderSummary();
   if(t==='challenge')renderChallenge();
   if(t==='kpi')renderKPI();
@@ -1228,7 +1331,8 @@ async function autoSync(silent=false){
   try{
     const payload=encodeURIComponent(JSON.stringify({
       workouts:logs.map(e=>({...e,zone:e.zone?e.zone.name:'',pace:e.pace?fmtPace(e.pace):''})),
-      weights:weights
+      weights:weights,
+      pushups:pushups
     }));
     const r=await fetch(shUrl+'?type=sync&payload='+payload,{mode:'cors'});
     const j=await r.json();
@@ -1244,6 +1348,8 @@ async function autoSync(silent=false){
         return w;
       });
       weights=j.data.weights.filter(w=>!w.deleted).map(w=>{w.date=normDate(w.date);w.val=parseFloat(w.val)||0;return w;});
+      // pushups：Apps Script 若尚未支援此欄位，j.data.pushups 會是 undefined，此時保留本機資料不覆蓋
+      if(Array.isArray(j.data.pushups))pushups=j.data.pushups.filter(p=>!p.deleted).map(p=>{p.date=normDate(p.date);p.count=parseInt(p.count)||0;return p;});
       save();
       lastSyncTime=j.serverTime||new Date().toISOString();
       localStorage.setItem('r100v6_lastsync',lastSyncTime);
@@ -1252,6 +1358,7 @@ async function autoSync(silent=false){
       const activeSec=SECS.find(s=>document.getElementById('sec-'+s).classList.contains('active'));
       if(activeSec==='history')renderHistory();
       else if(activeSec==='weight')renderWeight();
+      else if(activeSec==='pushup')renderPushup();
       else if(activeSec==='chart')initRingChart();
       else if(activeSec==='kpi')renderKPI();
       else if(activeSec==='alert')renderAlert();
@@ -1298,6 +1405,7 @@ function startAutoSync(){
 // ── Init ───────────────────────────────────────────────
 document.getElementById('f-date').value=today();
 document.getElementById('w-date').value=today();
+document.getElementById('pu-date').value=today();
 setBadge(!!shUrl);
 renderChallenge();renderSummary();
 startAutoSync();
