@@ -1,6 +1,6 @@
 {
-  "name": "365_Run 超慢跑挑戰",
-  "short_name": "365_Run",
+  "name": "365超慢跑與健身",
+  "short_name": "365超慢跑與健身",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f2f2f7",
