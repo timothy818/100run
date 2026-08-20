@@ -911,7 +911,12 @@ function renderChallenge(){
   const startStr=goals.start||today();
   const startDate=new Date(startStr);
   const nowDate=new Date(today());
-  const daysPassed=Math.max(0,Math.min(365,dayDiff(startStr,today())+1));
+  const dayStatuses=computeDayStatuses();
+  const calendarDaysPassed=Math.max(0,Math.min(365,dayDiff(startStr,today())+1));
+  // 「第N天」＝日曆天數，扣掉「已確定沒補回的缺席天」（今天尚在進行中，不算缺席）。
+  // 中途未達標又沒補回的日子不會平白讓天數往前跳，效果上等同把挑戰期限順延一天。
+  const missedBeforeToday=Object.keys(dayStatuses).filter(d=>d!==today()&&dayStatuses[d]==='miss').length;
+  const daysPassed=Math.max(0,Math.min(365,calendarDaysPassed-missedBeforeToday));
   const remain=Math.max(0,365-daysPassed);
   const totalDist=logs.reduce((s,l)=>s+l.dist,0);
   const pct=Math.min(Math.round(daysPassed/365*100),100);
@@ -924,7 +929,6 @@ function renderChallenge(){
   document.getElementById('ch-dpct').textContent=dpct+'%';
   document.getElementById('ch-bar').style.width=pct+'%';
   document.getElementById('ch-dbar').style.width=dpct+'%';
-  const dayStatuses=computeDayStatuses();
   const todayLogs=logs.filter(l=>l.date===today());
   const todayDist=todayLogs.reduce((s,l)=>s+l.dist,0);
   const todayDone=dayStatuses[today()]==='done';
