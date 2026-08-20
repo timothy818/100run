@@ -300,6 +300,31 @@ html,body{
     </div>
   </div>
   <div class="card">
+    <div class="ct">伏地挺身累積</div>
+    <div class="ring-area">
+      <div class="rw" style="width:150px;height:150px">
+        <canvas id="c-pushup-ring" role="img" aria-label="伏地挺身累積次數環形圖">伏地挺身累積</canvas>
+        <div class="rc" style="width:90px">
+          <div class="rc-l">累積</div>
+          <div class="rc-v" id="pur-count" style="font-size:26px;color:var(--purple)">0</div>
+          <div class="rc-u">下</div>
+        </div>
+      </div>
+      <div class="rm-area">
+        <div class="mg" style="margin-bottom:10px;grid-template-columns:1fr 1fr">
+          <div class="mc"><div class="mc-l">今日次數</div><div class="mc-v" id="pur-today">0</div><div class="mc-u">下</div></div>
+          <div class="mc"><div class="mc-l">目標次數</div><div class="mc-v" id="pur-goal">10000</div><div class="mc-u">下</div></div>
+          <div class="mc"><div class="mc-l">最佳單日</div><div class="mc-v" id="pur-best" style="color:var(--green)">—</div><div class="mc-u">下</div></div>
+          <div class="mc"><div class="mc-l">累積天數</div><div class="mc-v" id="pur-days">0</div><div class="mc-u">天</div></div>
+        </div>
+        <div class="pr" style="margin-bottom:0">
+          <div class="pr-hdr"><span class="pr-l">累積進度</span><span class="pr-v" id="pur-pct">0%</span></div>
+          <div class="pr-track"><div class="pr-bar" id="pur-bar" style="background:var(--purple);width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
     <div class="ct">365天行事曆</div>
     <div class="cal100" id="cal-100"></div>
     <div style="display:flex;gap:12px;font-size:11px;color:var(--text3);flex-wrap:wrap">
@@ -523,6 +548,14 @@ html,body{
     <button class="btn btn-primary" onclick="addPushup()">儲存</button>
     <div id="pu-st" class="st"></div>
   </div>
+  <div class="card">
+    <div class="ct">累積目標設定</div>
+    <div class="form-grid" style="margin-bottom:12px">
+      <div class="fg form-full"><label>累積目標次數 (下)</label><input type="number" id="pu-goal" min="0" step="100" placeholder="10000" inputmode="numeric"></div>
+    </div>
+    <button class="btn btn-secondary" onclick="savePuGoal()">儲存目標</button>
+    <div id="pu-goal-st" class="st"></div>
+  </div>
   <div class="card"><div class="ct">伏地挺身趨勢</div><div style="position:relative;width:100%;height:150px"><canvas id="c-pu" role="img" aria-label="伏地挺身次數趨勢">伏地挺身趨勢</canvas></div></div>
   <div class="card"><div class="ct">伏地挺身記錄</div><div id="pu-list"><div class="empty">尚無記錄</div></div></div>
 </div>
@@ -674,7 +707,7 @@ migrate();
 
 // ── State ──────────────────────────────────────────────
 let logs=[],weights=[],pushups=[],shUrl='',charts={},confirmCb=null,currentMetric='dist',currentPeriod=0,deferredPrompt=null;
-const DEFAULT_GOALS={start:'',minDist:2,targetDist:7,totalDist:2555,z2:128,z4:160,tw:74,mdist:120};
+const DEFAULT_GOALS={start:'',minDist:2,targetDist:7,totalDist:2555,z2:128,z4:160,tw:74,mdist:120,puGoal:10000};
 let goals={...DEFAULT_GOALS};
 
 try{logs=JSON.parse(localStorage.getItem(KEYS.logs)||'[]');}catch(e){logs=[];}
@@ -723,16 +756,24 @@ function normDate(dateStr){
   // 把各種格式統一成 YYYY-MM-DD
   if(!dateStr)return '';
   const s=String(dateStr).trim();
+  let y,mo,da;
   // 純日期（不含時間戳記，例如 date input 給的 2026-08-17）：直接擷取，不做時區換算
   let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-  if(m)return m[1]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[3]).padStart(2,'0');
-  // 含時間戳記（例如 Apps Script／Google Sheets 回傳的 ISO UTC 字串 2026-08-16T16:00:00.000Z）
-  // 或英文日期（Fri May 15 2026）：一律用瀏覽器在地時區換算，避免 UTC 轉換造成跨天位移
-  const d=new Date(s);
-  if(!isNaN(d.getTime())){
-    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  if(m){y=parseInt(m[1]);mo=parseInt(m[2]);da=parseInt(m[3]);}
+  else{
+    // 含時間戳記（例如 Apps Script／Google Sheets 回傳的 ISO UTC 字串 2026-08-16T16:00:00.000Z）
+    // 或英文日期（Fri May 15 2026）：一律用瀏覽器在地時區換算，避免 UTC 轉換造成跨天位移
+    const d=new Date(s);
+    if(!isNaN(d.getTime())){y=d.getFullYear();mo=d.getMonth()+1;da=d.getDate();}
+    else return s;
   }
-  return s;
+  // 已知的同步異常：Apps Script 偶爾會把年份寫錯成少 25 年（月/日正確，只有年份跑掉，
+  // 例如 2026 誤存成 2001）。偵測到明顯不合理的年份時自動加回校正，避免整批日期跑掉。
+  if(y<2020||y>2035){
+    const corrected=y+25;
+    if(corrected>=2020&&corrected<=2035)y=corrected;
+  }
+  return y+'-'+String(mo).padStart(2,'0')+'-'+String(da).padStart(2,'0');
 }
 function fmtDate(dateStr){
   if(!dateStr)return '';
@@ -875,6 +916,12 @@ function loadGoalInputs(){
   document.getElementById('g-tw').value=goals.tw;
   document.getElementById('g-mdist').value=goals.mdist;
 }
+function savePuGoal(){
+  goals.puGoal=parseFloat(document.getElementById('pu-goal').value)||10000;
+  saveGoalStore();renderChallenge();
+  showSt('pu-goal-st','ok','目標已儲存');
+  toast('伏地挺身目標已儲存 ✓');
+}
 
 // ── Day status (含隔天補回判斷) ──────────────────────────
 // 規則：若某日未達每日最低門檻(miss)，且「隔天」單日距離達到最低門檻的2倍，
@@ -912,11 +959,9 @@ function renderChallenge(){
   const startDate=new Date(startStr);
   const nowDate=new Date(today());
   const dayStatuses=computeDayStatuses();
-  const calendarDaysPassed=Math.max(0,Math.min(365,dayDiff(startStr,today())+1));
-  // 「第N天」＝日曆天數，扣掉「已確定沒補回的缺席天」（今天尚在進行中，不算缺席）。
-  // 中途未達標又沒補回的日子不會平白讓天數往前跳，效果上等同把挑戰期限順延一天。
-  const missedBeforeToday=Object.keys(dayStatuses).filter(d=>d!==today()&&dayStatuses[d]==='miss').length;
-  const daysPassed=Math.max(0,Math.min(365,calendarDaysPassed-missedBeforeToday));
+  // 「第N天」＝已經真正達標（含隔天補回）的天數；今天尚未達標就先不計入，
+  // 等今天也達標了才會+1。這樣不管中途有沒有缺席，都不用另外扣算。
+  const daysPassed=Math.max(0,Math.min(365,Object.values(dayStatuses).filter(s=>s==='done'||s==='makeup').length));
   const remain=Math.max(0,365-daysPassed);
   const totalDist=logs.reduce((s,l)=>s+l.dist,0);
   const pct=Math.min(Math.round(daysPassed/365*100),100);
@@ -944,6 +989,7 @@ function renderChallenge(){
     type:'doughnut',data:{datasets:[{data:[pct,100-pct],backgroundColor:['#ff9500','rgba(128,128,128,0.1)'],borderWidth:0}]},
     options:{responsive:true,maintainAspectRatio:true,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{duration:600}}
   });
+  renderPushupRing();
 
   // 365-day calendar
   const grid=document.getElementById('cal-100');grid.innerHTML='';
@@ -1257,15 +1303,16 @@ function addPushup(){
   const d=document.getElementById('pu-date').value,v=parseInt(document.getElementById('pu-val').value);
   if(!d||!v&&v!==0){toast('請輸入日期與次數');return;}
   savePushupEntry(d,v);
-  renderPushup();
+  renderPushup();renderPushupRing();
   document.getElementById('pu-val').value='';document.getElementById('pu-date').value=today();
   toast('伏地挺身已記錄 ✓');showSt('pu-st','ok','儲存成功');
 }
 function delPushup(date){confirm2('確定刪除伏地挺身記錄？',date,()=>{
   if(shUrl)getReq({type:'delete',kind:'pushup',date});
-  pushups=pushups.filter(p=>p.date!==date);save();renderPushup();toast('已刪除');
+  pushups=pushups.filter(p=>p.date!==date);save();renderPushup();renderPushupRing();toast('已刪除');
 },'刪除');}
 function renderPushup(){
+  document.getElementById('pu-goal').value=goals.puGoal;
   if(!pushups.length){['pu-today','pu-total'].forEach(id=>document.getElementById(id).textContent='0');['pu-best','pu-avg'].forEach(id=>document.getElementById(id).textContent='—');document.getElementById('pu-list').innerHTML='<div class="empty">尚無記錄</div>';if(charts['c-pu']){charts['c-pu'].destroy();delete charts['c-pu'];}return;}
   const todayP=pushups.find(p=>p.date===today());
   document.getElementById('pu-today').textContent=todayP?todayP.count:0;
@@ -1276,6 +1323,24 @@ function renderPushup(){
   document.getElementById('pu-avg').textContent=wkP.length?Math.round(wkP.reduce((s,p)=>s+p.count,0)/wkP.length):'—';
   document.getElementById('pu-list').innerHTML=[...pushups].sort((a,b)=>b.date.localeCompare(a.date)).map(p=>`<div class="w-item"><span style="font-weight:600">${fmtDate(p.date)}</span><span style="color:var(--text3)">${p.count} 下</span><button class="icon-btn icon-btn-del" onclick="delPushup('${p.date}')" aria-label="刪除"><i class="ti ti-trash" style="font-size:13px"></i></button></div>`).join('');
   renderPuChart();
+}
+function renderPushupRing(){
+  const total=pushups.reduce((s,p)=>s+p.count,0);
+  const todayP=pushups.find(p=>p.date===today());
+  const goal=goals.puGoal||10000;
+  const pct=Math.min(Math.round(total/goal*100),100);
+  document.getElementById('pur-count').textContent=total;
+  document.getElementById('pur-today').textContent=todayP?todayP.count:0;
+  document.getElementById('pur-goal').textContent=goal;
+  document.getElementById('pur-best').textContent=pushups.length?Math.max(...pushups.map(p=>p.count)):'—';
+  document.getElementById('pur-days').textContent=pushups.length;
+  document.getElementById('pur-pct').textContent=pct+'%';
+  document.getElementById('pur-bar').style.width=pct+'%';
+  if(charts['c-pushup-ring'])charts['c-pushup-ring'].destroy();
+  charts['c-pushup-ring']=new Chart(document.getElementById('c-pushup-ring'),{
+    type:'doughnut',data:{datasets:[{data:[pct,100-pct],backgroundColor:['#bf5af2','rgba(128,128,128,0.1)'],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:true,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{duration:600}}
+  });
 }
 function renderPuChart(){
   if(charts['c-pu'])charts['c-pu'].destroy();
