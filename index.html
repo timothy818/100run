@@ -72,6 +72,11 @@ html,body{
 /* ── Base ── */
 .sec{display:none}.sec.active{display:block}
 .card{background:var(--card);border-radius:var(--r);padding:14px 16px;margin-bottom:12px;box-shadow:0 1px 2px rgba(28,28,30,0.04),0 10px 24px -14px rgba(28,28,30,0.10);border:0.5px solid rgba(28,28,30,0.045)}
+#log-advanced{margin:10px 0 0;border-top:0.5px solid var(--sep);padding-top:10px}
+.log-adv-summary{cursor:pointer;font-size:12px;color:var(--text3);font-weight:600;list-style:none;display:flex;align-items:center;gap:5px;user-select:none}
+.log-adv-summary::-webkit-details-marker{display:none}
+.log-adv-summary::before{content:'▸';display:inline-block;font-size:10px;transition:transform .15s;color:var(--text3)}
+#log-advanced[open] .log-adv-summary::before{transform:rotate(90deg)}
 .ct{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px}
 .chdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .chdr .ct{margin-bottom:0}
@@ -336,15 +341,27 @@ html,body{
     <div class="ct">新增訓練</div>
     <div class="form-grid">
       <div class="fg"><label>日期</label><input type="date" id="f-date"></div>
-      <div class="fg"><label>類型</label><select id="f-type"><option value="run">跑步</option><option value="cycle">騎車</option><option value="swim">游泳</option><option value="other">其他</option></select></div>
+      <div class="fg"><label>類型</label><select id="f-type" onchange="onTypeChange()"><option value="run">跑步</option><option value="cycle">騎車</option><option value="swim">游泳</option><option value="other">其他</option><option value="pushup">伏地挺身</option></select></div>
+    </div>
+    <div class="form-grid" id="log-cardio-fields">
       <div class="fg"><label>距離 (km)</label><input type="number" id="f-dst" min="0" step="0.01" placeholder="0.00" inputmode="decimal"></div>
       <div class="fg"><label>時間（分 / 秒 / 毫秒）</label><div style="display:flex;gap:6px;align-items:center"><input type="number" id="f-tmin" placeholder="分" min="0" inputmode="numeric" style="text-align:center"><span style="color:var(--text3);font-weight:600">:</span><input type="number" id="f-tsec" placeholder="秒" min="0" max="59" inputmode="numeric" style="text-align:center"><span style="color:var(--text3);font-weight:600">.</span><input type="number" id="f-tms" placeholder="毫秒" min="0" max="999" inputmode="numeric" style="text-align:center"></div></div>
-      <div class="fg"><label>平均心率 (bpm)</label><input type="number" id="f-hra" min="0" placeholder="—" inputmode="numeric"></div>
-      <div class="fg"><label>最大心率 (bpm)</label><input type="number" id="f-hrm" min="0" placeholder="—" inputmode="numeric"></div>
-      <div class="fg"><label>平均功率 (W)</label><input type="number" id="f-pwa" min="0" placeholder="—" inputmode="numeric"></div>
-      <div class="fg"><label>最大功率 (W)</label><input type="number" id="f-pwm" min="0" placeholder="—" inputmode="numeric"></div>
-      <div class="fg"><label>熱量 (kcal)</label><input type="number" id="f-cal" min="0" placeholder="—" inputmode="numeric"></div>
-      <div class="fg"><label>心率基準 (bpm)</label><input type="number" id="f-hrb" value="177" min="100" max="250" inputmode="numeric"></div>
+    </div>
+    <div class="form-grid" id="log-pushup-fields" style="display:none">
+      <div class="fg form-full"><label>次數 (下)</label><input type="number" id="f-pu-count" min="0" step="1" placeholder="下" inputmode="numeric"></div>
+    </div>
+    <details id="log-advanced">
+      <summary class="log-adv-summary">進階資訊（心率／功率／熱量，選填）</summary>
+      <div class="form-grid" style="margin-top:10px">
+        <div class="fg"><label>平均心率 (bpm)</label><input type="number" id="f-hra" min="0" placeholder="—" inputmode="numeric"></div>
+        <div class="fg"><label>最大心率 (bpm)</label><input type="number" id="f-hrm" min="0" placeholder="—" inputmode="numeric"></div>
+        <div class="fg"><label>平均功率 (W)</label><input type="number" id="f-pwa" min="0" placeholder="—" inputmode="numeric"></div>
+        <div class="fg"><label>最大功率 (W)</label><input type="number" id="f-pwm" min="0" placeholder="—" inputmode="numeric"></div>
+        <div class="fg"><label>熱量 (kcal)</label><input type="number" id="f-cal" min="0" placeholder="—" inputmode="numeric"></div>
+        <div class="fg"><label>心率基準 (bpm)</label><input type="number" id="f-hrb" value="177" min="100" max="250" inputmode="numeric"></div>
+      </div>
+    </details>
+    <div class="form-grid" style="margin-top:10px">
       <div class="fg form-full"><label>備註</label><input type="text" id="f-note" placeholder="今天狀況..."></div>
     </div>
     <div class="ac-box" id="ac-box">
@@ -706,10 +723,11 @@ function normDate(dateStr){
   // 把各種格式統一成 YYYY-MM-DD
   if(!dateStr)return '';
   const s=String(dateStr).trim();
-  // 已是 YYYY-MM-DD
-  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  // 純日期（不含時間戳記，例如 date input 給的 2026-08-17）：直接擷取，不做時區換算
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
   if(m)return m[1]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[3]).padStart(2,'0');
-  // 英文日期如 Fri May 15 2026 或 Fri May 15（補當年）
+  // 含時間戳記（例如 Apps Script／Google Sheets 回傳的 ISO UTC 字串 2026-08-16T16:00:00.000Z）
+  // 或英文日期（Fri May 15 2026）：一律用瀏覽器在地時區換算，避免 UTC 轉換造成跨天位移
   const d=new Date(s);
   if(!isNaN(d.getTime())){
     return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -734,6 +752,15 @@ function calcZone(hr,base){
   if(p>=0.9)return{name:'Z5 最大',aero:10,anaero:90};if(p>=0.8)return{name:'Z4 閾值',aero:35,anaero:65};
   if(p>=0.7)return{name:'Z3 有氧',aero:65,anaero:35};if(p>=0.6)return{name:'Z2 基礎',aero:85,anaero:15};
   return{name:'Z1 恢復',aero:95,anaero:5};
+}
+
+// ── 類型切換（跑步/騎車/游泳/其他 ↔ 伏地挺身）─────────────
+function onTypeChange(){
+  const isPushup=document.getElementById('f-type').value==='pushup';
+  document.getElementById('log-cardio-fields').style.display=isPushup?'none':'';
+  document.getElementById('log-advanced').style.display=isPushup?'none':'';
+  document.getElementById('log-pushup-fields').style.display=isPushup?'':'none';
+  document.getElementById('ac-box').style.display='none';
 }
 
 // ── Live calc ──────────────────────────────────────────
@@ -771,9 +798,24 @@ function buildEntry(px){
     note:document.getElementById(px+'-note').value,zone:z,pace:calcPace(dist,sec),
     aeroMin:z&&sec?Math.round(sec/60*z.aero/100):0,anaeroMin:z&&sec?Math.round(sec/60*z.anaero/100):0};
 }
+function savePushupEntry(date,count){
+  const now=new Date().toISOString();
+  pushups=pushups.filter(p=>p.date!==date);pushups.push({date,count,updatedAt:now});pushups.sort((a,b)=>a.date.localeCompare(b.date));
+  save();if(shUrl)getReq({type:'upsert',kind:'pushup',date,count});
+}
 function addEntry(){
+  const d=document.getElementById('f-date').value;
+  if(!d){toast('請選擇日期');return;}
+  if(document.getElementById('f-type').value==='pushup'){
+    const v=parseInt(document.getElementById('f-pu-count').value);
+    if(!v&&v!==0){toast('請輸入伏地挺身次數');return;}
+    savePushupEntry(d,v);
+    renderPushup();renderChallenge();
+    document.getElementById('f-pu-count').value='';document.getElementById('f-date').value=today();
+    toast('伏地挺身已記錄 ✓');showSt('log-st','ok','儲存成功');
+    return;
+  }
   const e={id:Date.now(),updatedAt:new Date().toISOString(),...buildEntry('f')};
-  if(!e.date){toast('請選擇日期');return;}
   logs.push(e);logs.sort((a,b)=>a.date.localeCompare(b.date));
   save();renderSummary();renderChallenge();
   if(shUrl)upsertEntry(e);
@@ -1210,9 +1252,8 @@ function renderWeight(){
 function addPushup(){
   const d=document.getElementById('pu-date').value,v=parseInt(document.getElementById('pu-val').value);
   if(!d||!v&&v!==0){toast('請輸入日期與次數');return;}
-  const now=new Date().toISOString();
-  pushups=pushups.filter(p=>p.date!==d);pushups.push({date:d,count:v,updatedAt:now});pushups.sort((a,b)=>a.date.localeCompare(b.date));
-  save();renderPushup();if(shUrl)getReq({type:'upsert',kind:'pushup',date:d,count:v});
+  savePushupEntry(d,v);
+  renderPushup();
   document.getElementById('pu-val').value='';document.getElementById('pu-date').value=today();
   toast('伏地挺身已記錄 ✓');showSt('pu-st','ok','儲存成功');
 }
@@ -1311,7 +1352,7 @@ function sw(t){
   if(t==='history')renderHistory();
   if(t==='weight')renderWeight();
   if(t==='pushup')renderPushup();
-  if(t==='log')renderSummary();
+  if(t==='log'){renderSummary();onTypeChange();}
   if(t==='challenge')renderChallenge();
   if(t==='kpi')renderKPI();
   if(t==='alert')renderAlert();
