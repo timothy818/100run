@@ -317,7 +317,7 @@ html,body{
       <div class="rm-area">
         <div class="mg" style="margin-bottom:10px;grid-template-columns:1fr 1fr">
           <div class="mc"><div class="mc-l">今日次數</div><div class="mc-v" id="pur-today">0</div><div class="mc-u">下</div></div>
-          <div class="mc"><div class="mc-l">目標次數</div><div class="mc-v" id="pur-goal">10000</div><div class="mc-u">下</div></div>
+          <div class="mc"><div class="mc-l">目標次數</div><div class="mc-v" id="pur-goal">3960</div><div class="mc-u">下</div></div>
           <div class="mc"><div class="mc-l">最佳單日</div><div class="mc-v" id="pur-best" style="color:var(--green)">—</div><div class="mc-u">下</div></div>
           <div class="mc"><div class="mc-l">累積天數</div><div class="mc-v" id="pur-days">0</div><div class="mc-u">天</div></div>
         </div>
@@ -556,12 +556,19 @@ html,body{
     <div class="ct">目標設定</div>
     <div class="form-grid" style="margin-bottom:12px">
       <div class="fg"><label>每日標準次數 (下)</label><input type="number" id="pu-daily" min="0" step="1" placeholder="10" inputmode="numeric"></div>
-      <div class="fg"><label>累積目標次數 (下)</label><input type="number" id="pu-goal" min="0" step="100" placeholder="10000" inputmode="numeric"></div>
+      <div class="fg"><label>累積目標次數 (下)</label><input type="number" id="pu-goal" min="0" step="100" placeholder="3960" inputmode="numeric"></div>
     </div>
     <button class="btn btn-secondary" onclick="savePuGoal()">儲存目標</button>
     <div id="pu-goal-st" class="st"></div>
   </div>
-  <div class="card"><div class="ct">伏地挺身趨勢</div><div style="position:relative;width:100%;height:150px"><canvas id="c-pu" role="img" aria-label="伏地挺身次數趨勢">伏地挺身趨勢</canvas></div></div>
+  <div class="card">
+    <div class="ct">伏地挺身趨勢</div>
+    <div style="margin:4px 0 18px">
+      <div id="pu-headline-n" style="font-size:44px;font-weight:800;letter-spacing:-1.5px;line-height:1;background:linear-gradient(135deg,#e0a3ff,#bf5af2 55%,#8b2fd6);-webkit-background-clip:text;background-clip:text;color:transparent;font-variant-numeric:tabular-nums">0</div>
+      <div id="pu-headline-l" style="font-size:13px;color:var(--text3);margin-top:4px;font-weight:500">近30天累積下數</div>
+    </div>
+    <div style="position:relative;width:100%;height:180px"><canvas id="c-pu" role="img" aria-label="伏地挺身次數趨勢">伏地挺身趨勢</canvas></div>
+  </div>
   <div class="card"><div class="ct">伏地挺身記錄</div><div id="pu-list"><div class="empty">尚無記錄</div></div></div>
 </div>
 
@@ -712,7 +719,7 @@ migrate();
 
 // ── State ──────────────────────────────────────────────
 let logs=[],weights=[],pushups=[],shUrl='',charts={},confirmCb=null,currentMetric='dist',currentPeriod=0,deferredPrompt=null;
-const DEFAULT_GOALS={start:'',minDist:2,targetDist:7,totalDist:2555,z2:128,z4:160,tw:74,mdist:120,puGoal:10000,puDaily:10};
+const DEFAULT_GOALS={start:'',minDist:2,targetDist:7,totalDist:2555,z2:128,z4:160,tw:74,mdist:120,puGoal:3960,puDaily:10};
 let goals={...DEFAULT_GOALS};
 
 try{logs=JSON.parse(localStorage.getItem(KEYS.logs)||'[]');}catch(e){logs=[];}
@@ -919,7 +926,7 @@ function loadGoalInputs(){
   document.getElementById('g-mdist').value=goals.mdist;
 }
 function savePuGoal(){
-  goals.puGoal=parseFloat(document.getElementById('pu-goal').value)||10000;
+  goals.puGoal=parseFloat(document.getElementById('pu-goal').value)||3960;
   goals.puDaily=parseFloat(document.getElementById('pu-daily').value)||10;
   saveGoalStore();renderChallenge();renderPushup();
   showSt('pu-goal-st','ok','目標已儲存');
@@ -1334,7 +1341,7 @@ function renderPushupRing(){
   const total=pushups.reduce((s,p)=>s+p.count,0);
   const todayP=pushups.find(p=>p.date===today());
   const todayCount=todayP?todayP.count:0;
-  const goal=goals.puGoal||10000;
+  const goal=goals.puGoal||3960;
   const daily=goals.puDaily||10;
   const pct=Math.min(Math.round(total/goal*100),100);
   document.getElementById('pur-count').textContent=total;
@@ -1353,11 +1360,32 @@ function renderPushupRing(){
 }
 function renderPuChart(){
   if(charts['c-pu'])charts['c-pu'].destroy();
-  if(!pushups.length)return;
+  const headlineEl=document.getElementById('pu-headline-n');
+  if(!pushups.length){headlineEl.textContent='0';return;}
   const recent=pushups.slice(-30);
-  charts['c-pu']=new Chart(document.getElementById('c-pu'),{type:'bar',
-    data:{labels:recent.map(p=>p.date.slice(5)),datasets:[{data:recent.map(p=>p.count),backgroundColor:'#bf5af2',borderRadius:4}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'}},x:{grid:{display:false}}}}
+  const monthTotal=recent.reduce((s,p)=>s+p.count,0);
+  headlineEl.textContent=monthTotal.toLocaleString();
+  const canvas=document.getElementById('c-pu');
+  const ctx=canvas.getContext('2d');
+  const gradient=ctx.createLinearGradient(0,0,0,180);
+  gradient.addColorStop(0,'#e0a3ff');
+  gradient.addColorStop(1,'#9333c9');
+  const todayStr=today();
+  const colors=recent.map(p=>p.date===todayStr?'#ff375f':gradient);
+  charts['c-pu']=new Chart(canvas,{type:'bar',
+    data:{labels:recent.map(p=>p.date.slice(5)),datasets:[{data:recent.map(p=>p.count),backgroundColor:colors,borderRadius:6,borderSkipped:false,maxBarThickness:20}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'#1c1c1e',titleFont:{size:10,weight:'normal'},bodyFont:{size:15,weight:'bold'},padding:10,cornerRadius:10,displayColors:false,callbacks:{label:(c)=>c.parsed.y+' 下'}}
+      },
+      scales:{
+        y:{display:false,beginAtZero:true},
+        x:{grid:{display:false},border:{display:false},ticks:{color:'#8e8e93',font:{size:9},maxRotation:0,autoSkip:true,maxTicksLimit:8}}
+      },
+      animation:{duration:900,easing:'easeOutQuart'}
+    }
   });
 }
 
