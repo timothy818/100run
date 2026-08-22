@@ -553,9 +553,10 @@ html,body{
     <div id="pu-st" class="st"></div>
   </div>
   <div class="card">
-    <div class="ct">累積目標設定</div>
+    <div class="ct">目標設定</div>
     <div class="form-grid" style="margin-bottom:12px">
-      <div class="fg form-full"><label>累積目標次數 (下)</label><input type="number" id="pu-goal" min="0" step="100" placeholder="10000" inputmode="numeric"></div>
+      <div class="fg"><label>每日標準次數 (下)</label><input type="number" id="pu-daily" min="0" step="1" placeholder="10" inputmode="numeric"></div>
+      <div class="fg"><label>累積目標次數 (下)</label><input type="number" id="pu-goal" min="0" step="100" placeholder="10000" inputmode="numeric"></div>
     </div>
     <button class="btn btn-secondary" onclick="savePuGoal()">儲存目標</button>
     <div id="pu-goal-st" class="st"></div>
@@ -711,7 +712,7 @@ migrate();
 
 // ── State ──────────────────────────────────────────────
 let logs=[],weights=[],pushups=[],shUrl='',charts={},confirmCb=null,currentMetric='dist',currentPeriod=0,deferredPrompt=null;
-const DEFAULT_GOALS={start:'',minDist:2,targetDist:7,totalDist:2555,z2:128,z4:160,tw:74,mdist:120,puGoal:10000};
+const DEFAULT_GOALS={start:'',minDist:2,targetDist:7,totalDist:2555,z2:128,z4:160,tw:74,mdist:120,puGoal:10000,puDaily:10};
 let goals={...DEFAULT_GOALS};
 
 try{logs=JSON.parse(localStorage.getItem(KEYS.logs)||'[]');}catch(e){logs=[];}
@@ -919,7 +920,8 @@ function loadGoalInputs(){
 }
 function savePuGoal(){
   goals.puGoal=parseFloat(document.getElementById('pu-goal').value)||10000;
-  saveGoalStore();renderChallenge();
+  goals.puDaily=parseFloat(document.getElementById('pu-daily').value)||10;
+  saveGoalStore();renderChallenge();renderPushup();
   showSt('pu-goal-st','ok','目標已儲存');
   toast('伏地挺身目標已儲存 ✓');
 }
@@ -1314,24 +1316,30 @@ function delPushup(date){confirm2('確定刪除伏地挺身記錄？',date,()=>{
 },'刪除');}
 function renderPushup(){
   document.getElementById('pu-goal').value=goals.puGoal;
-  if(!pushups.length){['pu-today','pu-total'].forEach(id=>document.getElementById(id).textContent='0');['pu-best','pu-avg'].forEach(id=>document.getElementById(id).textContent='—');document.getElementById('pu-list').innerHTML='<div class="empty">尚無記錄</div>';if(charts['c-pu']){charts['c-pu'].destroy();delete charts['c-pu'];}return;}
+  document.getElementById('pu-daily').value=goals.puDaily;
+  if(!pushups.length){['pu-today','pu-total'].forEach(id=>document.getElementById(id).textContent='0');['pu-best','pu-avg'].forEach(id=>document.getElementById(id).textContent='—');document.getElementById('pu-list').innerHTML='<div class="empty">尚無記錄</div>';document.getElementById('pu-today').style.color='';if(charts['c-pu']){charts['c-pu'].destroy();delete charts['c-pu'];}return;}
   const todayP=pushups.find(p=>p.date===today());
-  document.getElementById('pu-today').textContent=todayP?todayP.count:0;
+  const todayCount=todayP?todayP.count:0;
+  document.getElementById('pu-today').textContent=todayCount+(todayCount>=goals.puDaily?' ✓':'');
+  document.getElementById('pu-today').style.color=todayCount>=goals.puDaily?'var(--green)':'';
   document.getElementById('pu-best').textContent=Math.max(...pushups.map(p=>p.count));
   document.getElementById('pu-total').textContent=pushups.reduce((s,p)=>s+p.count,0);
   const now=new Date(),ws=new Date(now);ws.setDate(now.getDate()-now.getDay()+1);
   const wkP=pushups.filter(p=>p.date>=ws.toISOString().split('T')[0]);
   document.getElementById('pu-avg').textContent=wkP.length?Math.round(wkP.reduce((s,p)=>s+p.count,0)/wkP.length):'—';
-  document.getElementById('pu-list').innerHTML=[...pushups].sort((a,b)=>b.date.localeCompare(a.date)).map(p=>`<div class="w-item"><span style="font-weight:600">${fmtDate(p.date)}</span><span style="color:var(--text3)">${p.count} 下</span><button class="icon-btn icon-btn-del" onclick="delPushup('${p.date}')" aria-label="刪除"><i class="ti ti-trash" style="font-size:13px"></i></button></div>`).join('');
+  document.getElementById('pu-list').innerHTML=[...pushups].sort((a,b)=>b.date.localeCompare(a.date)).map(p=>`<div class="w-item"><span style="font-weight:600">${fmtDate(p.date)}</span><span style="color:${p.count>=goals.puDaily?'var(--green)':'var(--text3)'}">${p.count} 下${p.count>=goals.puDaily?' ✓':''}</span><button class="icon-btn icon-btn-del" onclick="delPushup('${p.date}')" aria-label="刪除"><i class="ti ti-trash" style="font-size:13px"></i></button></div>`).join('');
   renderPuChart();
 }
 function renderPushupRing(){
   const total=pushups.reduce((s,p)=>s+p.count,0);
   const todayP=pushups.find(p=>p.date===today());
+  const todayCount=todayP?todayP.count:0;
   const goal=goals.puGoal||10000;
+  const daily=goals.puDaily||10;
   const pct=Math.min(Math.round(total/goal*100),100);
   document.getElementById('pur-count').textContent=total;
-  document.getElementById('pur-today').textContent=todayP?todayP.count:0;
+  document.getElementById('pur-today').textContent=todayCount+(todayCount>=daily?' ✓':'');
+  document.getElementById('pur-today').style.color=todayCount>=daily?'var(--green)':'';
   document.getElementById('pur-goal').textContent=goal;
   document.getElementById('pur-best').textContent=pushups.length?Math.max(...pushups.map(p=>p.count)):'—';
   document.getElementById('pur-days').textContent=pushups.length;
